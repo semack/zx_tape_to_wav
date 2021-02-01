@@ -105,25 +105,4 @@ class WavBuilder {
       builder.appendFileContents(writer.toBytes());
     }
   }
-
-  static void _createHeader(BinaryWriter writer) {
-    var byteRate = _frequency * _numChannels * _bitRate ~/ BYTE_SIZE,
-        blockAlign = _numChannels * _bitRate ~/ 8,
-        bitsPerSample = _bitRate;
-    _outputBytes.addAll(_utf8encoder.convert('fmt '));
-    _outputBytes.addAll(
-        ByteUtils.numberAsByteList(SUB_CHUNK_SIZE, 4, bigEndian: false));
-    _outputBytes
-        .addAll(ByteUtils.numberAsByteList(AUDIO_FORMAT, 2, bigEndian: false));
-    _outputBytes
-        .addAll(ByteUtils.numberAsByteList(_numChannels, 2, bigEndian: false));
-    _outputBytes
-        .addAll(ByteUtils.numberAsByteList(_frequency, 4, bigEndian: false));
-    _outputBytes
-        .addAll(ByteUtils.numberAsByteList(byteRate, 4, bigEndian: false));
-    _outputBytes
-        .addAll(ByteUtils.numberAsByteList(blockAlign, 2, bigEndian: false));
-    _outputBytes
-        .addAll(ByteUtils.numberAsByteList(bitsPerSample, 2, bigEndian: false));
-  }
 }

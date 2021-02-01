@@ -56,7 +56,8 @@ class ZxTape {
   }
 
   Future<Uint8List> getWavBytes({int frequency}) async {
-    return WavBuilder.build(_blocks, frequency: frequency);
+    var builder = new WavBuilder(blocks);
+    return builder.toBytes();
   }
 
   Future<TapeFileType> _detectFileType() async {

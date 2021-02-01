@@ -1,74 +1,77 @@
 import 'dart:typed_data';
 
-import 'package:wave_builder/wave_builder.dart';
 import 'package:zx_tape_to_wav/src/lib/binary_writer.dart';
 
 import 'blocks.dart';
 
 class WavBuilder {
-  static Uint8List build(List<BlockBase> blocks, {int frequency = 22050}) {
-    var builder = new WaveBuilder();
+  List<BlockBase> _blocks;
+  int _frequency;
+  bool _amplifySoundSignal;
+  var _writer = new BinaryWriter();
 
-    blocks.forEach((block) async {
-      _fillSoundData(builder, block, frequency, true);
-    });
-
-    return Uint8List.fromList(builder.fileBytes);
+  WavBuilder(List<BlockBase> blocks,
+      {int frequency = 22050, bool amplifySoundSignal = false}) {
+    _blocks = blocks;
+    _frequency = frequency;
+    _amplifySoundSignal = amplifySoundSignal;
   }
 
-  WavBuilder._();
+  Uint8List toBytes() {
+    _blocks.forEach((block) {
+      _addBlockSoundData(block);
+    });
+    return _writer.toBytes();
+  }
 
-  static _doSignal(
-      BinaryWriter writer, int signalLevel, int clks, int frequency) {
-    var sampleNanoSec = 1000000000 / frequency;
+  void _doSignal(int signalLevel, int clks) {
+    var sampleNanoSec = 1000000000 / _frequency;
     var cpuClkNanoSec = 286;
     var samples = (cpuClkNanoSec * clks / sampleNanoSec).round();
 
-    for (var i = 0; i < samples; i++) writer.writeUint8(signalLevel);
+    for (var i = 0; i < samples; i++) _writer.writeUint8(signalLevel);
   }
 
-  static _writeDataByte(BinaryWriter writer, DataBlock block, int byte, int hi,
-      int lo, int frequency) {
+  void _writeDataByte(DataBlock block, int byte, int hi, int lo) {
     int mask = 0x80;
 
     while (mask != 0) {
       var len = (byte & mask) == 0 ? block.zeroLen : block.oneLen;
-      _doSignal(writer, hi, len, frequency);
-      _doSignal(writer, lo, len, frequency);
+      _doSignal(hi, len);
+      _doSignal(lo, len);
       mask >>= 1;
     }
   }
 
-  static _fillSoundData(WaveBuilder builder, BlockBase block, int frequency, bool amplifySoundSignal) {
+  void _writePause(int ms) {
+    for (var i = 0; i < _frequency * (ms / 1000); i++) _writer.writeUint8(0x00);
+  }
+
+  void _addBlockSoundData(BlockBase block) {
     int hi, lo;
-    if (amplifySoundSignal)
-    {
+    if (_amplifySoundSignal) {
       hi = 0xFF;
       lo = 0x00;
-    }
-    else
-    {
+    } else {
       hi = 0xC0;
       lo = 0x40;
     }
     if (block is DataBlock) {
-      var writer = BinaryWriter();
       var signalState = hi;
       for (var i = 0; i < block.pilotLen; i++) {
-        _doSignal(writer, signalState, block.pilotPulseLen, frequency);
+        _doSignal(signalState, block.pilotPulseLen);
         signalState = signalState == hi ? lo : hi;
       }
 
       // pilot
-      if (signalState == lo)
-        _doSignal(writer, lo, block.pilotPulseLen, frequency);
+      if (signalState == lo) _doSignal(lo, block.pilotPulseLen);
 
-      _doSignal(writer, hi, block.firstSyncLen, frequency);
-      _doSignal(writer, lo, block.secondSyncLen, frequency);
+      _doSignal(hi, block.firstSyncLen);
+      _doSignal(lo, block.secondSyncLen);
 
       // writing data
       block.data.forEach((byte) {
-        _writeDataByte(writer, block, byte, hi, lo, frequency);
+        _writeDataByte(block, byte, hi, lo);
       });
 
       // last sync3
@@ -76,33 +79,24 @@ class WavBuilder {
         var len = block.zeroLen;
         if ((block.data[block.data.length - 1] & (1 << i)) != 0)
           len = block.oneLen;
-        _doSignal(writer, hi, len, frequency);
-        _doSignal(writer, lo, len, frequency);
+        _doSignal(hi, len);
+        _doSignal(lo, len);
       }
-
-      builder.appendFileContents(writer.toBytes());
 
       // adding pause
-      if (block.tailMs > 0)
-        builder.appendSilence(
-            block.tailMs, WaveBuilderSilenceType.EndOfLastSample);
+      if (block.tailMs > 0) _writePause(block.tailMs);
     } else if (block is PauseOrStopTheTapeBlock) {
-      builder.appendSilence(
-          block.duration, WaveBuilderSilenceType.EndOfLastSample);
+      _writePause(block.duration);
     } else if (block is PulseSequenceBlock) {
-      var writer = BinaryWriter();
       block.pulses.forEach((pulse) {
-        _doSignal(writer, hi, pulse, frequency);
-        _doSignal(writer, lo, pulse, frequency);
+        _doSignal(hi, pulse);
+        _doSignal(lo, pulse);
       });
-      builder.appendFileContents(writer.toBytes());
     } else if (block is PureToneBlock) {
-      var writer = BinaryWriter();
       for (var i = 0; i < block.pulses; i++) {
-        _doSignal(writer, hi, block.pulseLen, frequency);
-        _doSignal(writer, lo, block.pulseLen, frequency);
+        _doSignal(hi, block.pulseLen);
+        _doSignal(lo, block.pulseLen);
       }
-      builder.appendFileContents(writer.toBytes());
     }
   }
 }

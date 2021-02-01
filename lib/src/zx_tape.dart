@@ -49,14 +49,16 @@ class ZxTape {
     }
   }
 
-  Future saveToWavFile(String filePath, {int frequency = 22050}) async {
+  Future saveToWavFile(String filePath,
+      {int frequency = 22050, bool amplifySoundSignal = false}) async {
     var bytes = await getWavBytes(frequency: frequency);
     var file = new File(filePath);
     await file.writeAsBytes(bytes);
   }
 
-  Future<Uint8List> getWavBytes({int frequency}) async {
-    var builder = new WavBuilder(blocks, frequency, false);
+  Future<Uint8List> getWavBytes(
+      {int frequency = 22050, bool amplifySoundSignal = false}) async {
+    var builder = new WavBuilder(blocks, frequency, amplifySoundSignal);
     return builder.toBytes();
   }
 

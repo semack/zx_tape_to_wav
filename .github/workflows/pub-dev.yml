@@ -26,6 +26,6 @@ jobs:
         }
         EOF
     - name: Update packages
-      run: pub get
+      run: flutter pub get
     - name: Publish package
-      run: pub publish -f
+      run: flutter pub publish -f

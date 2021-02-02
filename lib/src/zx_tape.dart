@@ -1,13 +1,14 @@
 import 'dart:typed_data';
 
-import 'lib/binary_reader.dart';
+import 'package:flutter/foundation.dart';
+
 import 'lib/blocks.dart';
 import 'lib/wav_builder.dart';
 
 enum TapeFileType { unknown, tap, tzx }
 
 class ZxTape {
-  BinaryReader _reader;
+  ReadBuffer _reader;
 
   List<BlockBase> _blocks = [];
 
@@ -28,7 +29,7 @@ class ZxTape {
   }
 
   ZxTape._create(ByteData data) {
-    _reader = new BinaryReader(data);
+    _reader = new ReadBuffer(data);
   }
 
   Future _load() async {
@@ -37,7 +38,7 @@ class ZxTape {
       throw new ArgumentError('Incompatible data format.');
 
     var index = 0;
-    while (!_reader.isEOF()) {
+    while (_reader.hasRemaining) {
       var block = await _readBlock(index);
       _blocks.add(block);
       index++;
@@ -54,15 +55,15 @@ class ZxTape {
   Future<TapeFileType> _detectFileType() async {
     try {
       // checking tzx
-      var reader = BinaryReader(_reader.raw);
-      var magic = reader.readInt64();
+      var reader = ReadBuffer(_reader.data);
+      var magic = reader.getInt64();
       if (magic == 0x1a2165706154585a) {
         // skipping header, setting zero position for rich data
-        _reader.skip(10);
+        _reader.getUint8List(10);
         return TapeFileType.tzx;
       }
       // checking tap
-      reader = BinaryReader(_reader.raw);
+      reader = ReadBuffer(_reader.data);
       var testBlock = new DataBlock(0, reader);
       if (testBlock.isCheckSumValid) return TapeFileType.tap;
     } catch (e) {}
@@ -75,7 +76,7 @@ class ZxTape {
       case TapeFileType.tap:
         return new DataBlock(index, _reader);
       case TapeFileType.tzx:
-        var blockType = _reader.readUint8();
+        var blockType = _reader.getUint8();
         switch (blockType) {
           case 0x10:
             return new StandardSpeedDataBlock(index, _reader);

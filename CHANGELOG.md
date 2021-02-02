@@ -1,3 +1,7 @@
+## 1.0.4
+### Improved
+* Deep refactoring, removed binary reader as not needed.
+
 ## 1.0.3
 ### Fixed
 * Typos.

@@ -1,22 +1,22 @@
 import 'dart:typed_data';
 
-import 'binary_reader.dart';
+import 'package:flutter/foundation.dart';
 
 abstract class BlockBase {
   int _index;
 
   int get index => _index;
 
-  BlockBase(int index, BinaryReader reader) {
+  BlockBase(int index, ReadBuffer reader) {
     _index = index;
     _loadData(reader);
   }
 
-  void _loadData(BinaryReader reader);
+  void _loadData(ReadBuffer reader);
 }
 
 class DataBlock extends BlockBase {
-  DataBlock(int index, BinaryReader reader) : super(index, reader);
+  DataBlock(int index, ReadBuffer reader) : super(index, reader);
 
   int _pilotPulseLen;
 
@@ -53,7 +53,7 @@ class DataBlock extends BlockBase {
   }
 
   @override
-  void _loadData(BinaryReader reader) {
+  void _loadData(ReadBuffer reader) {
     _pilotPulseLen = 2168;
     _firstSyncLen = 667;
     _secondSyncLen = 735;
@@ -62,8 +62,8 @@ class DataBlock extends BlockBase {
     _tailMs = 1000;
     _rem = 8;
     _pilotLen = 8083;
-    var length = reader.readUint16();
-    _data = reader.readUint8Array(length);
+    var length = reader.getUint16();
+    _data = reader.getUint8List(length);
     if (_data[0] >= 128) _pilotLen = 3223;
   }
 }
@@ -71,13 +71,13 @@ class DataBlock extends BlockBase {
 class ArchiveInfoBlock extends BlockBase {
   String description;
 
-  ArchiveInfoBlock(int index, BinaryReader reader) : super(index, reader);
+  ArchiveInfoBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
-  void _loadData(BinaryReader reader) {
+  void _loadData(ReadBuffer reader) {
     {
-      var length = reader.readUint16();
-      description = reader.readAsString(length);
+      var length = reader.getUint16();
+      description = String.fromCharCodes(reader.getUint8List(length));
     }
   }
 }
@@ -85,74 +85,74 @@ class ArchiveInfoBlock extends BlockBase {
 class GroupStartBlock extends BlockBase {
   String groupName;
 
-  GroupStartBlock(int index, BinaryReader reader) : super(index, reader);
+  GroupStartBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
-  void _loadData(BinaryReader reader) {
-    var length = reader.readUint8();
-    groupName = reader.readAsString(length);
+  void _loadData(ReadBuffer reader) {
+    var length = reader.getUint8();
+    groupName = String.fromCharCodes(reader.getUint8List(length));
   }
 }
 
 class GroupEndBlock extends BlockBase {
   @override
-  void _loadData(BinaryReader reader) {
+  void _loadData(ReadBuffer reader) {
     // nothing to do
   }
 
-  GroupEndBlock(int index, BinaryReader reader) : super(index, reader);
+  GroupEndBlock(int index, ReadBuffer reader) : super(index, reader);
 }
 
 class HardwareTypeBlock extends BlockBase {
-  HardwareTypeBlock(int index, BinaryReader reader) : super(index, reader);
+  HardwareTypeBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
-  void _loadData(BinaryReader reader) {
-    var length = reader.readUint8();
-    reader.skip(length * 3);
+  void _loadData(ReadBuffer reader) {
+    var length = reader.getUint8();
+    // skip block data
+    reader.getUint8List(length * 3);
   }
 }
 
 class PauseOrStopTheTapeBlock extends BlockBase {
   int duration;
 
-  PauseOrStopTheTapeBlock(int index, BinaryReader reader)
-      : super(index, reader);
+  PauseOrStopTheTapeBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
-  void _loadData(BinaryReader reader) {
-    duration = reader.readUint16();
+  void _loadData(ReadBuffer reader) {
+    duration = reader.getUint16();
   }
 }
 
 class PulseSequenceBlock extends BlockBase {
   Uint16List pulses;
 
-  PulseSequenceBlock(int index, BinaryReader reader) : super(index, reader);
+  PulseSequenceBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
-  void _loadData(BinaryReader reader) {
-    var length = reader.readUint8();
+  void _loadData(ReadBuffer reader) {
+    var length = reader.getUint8();
     pulses = new Uint16List(length);
-    for (var i = 0; i < length; i++) pulses[i] = reader.readUint16();
+    for (var i = 0; i < length; i++) pulses[i] = reader.getUint16();
   }
 }
 
 class PureDataBlock extends DataBlock {
-  PureDataBlock(int index, BinaryReader reader) : super(index, reader);
+  PureDataBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   bool get isCheckSumValid => true;
 
   @override
-  void _loadData(BinaryReader reader) {
-    _zeroLen = reader.readUint16();
-    _oneLen = reader.readUint16();
-    _rem = reader.readUint8();
-    _tailMs = reader.readUint16();
-    var bytes = reader.readUint8Array(3);
+  void _loadData(ReadBuffer reader) {
+    _zeroLen = reader.getUint16();
+    _oneLen = reader.getUint16();
+    _rem = reader.getUint8();
+    _tailMs = reader.getUint16();
+    var bytes = reader.getUint8List(3);
     var length = (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
-    _data = reader.readUint8Array(length);
+    _data = reader.getUint8List(length);
   }
 }
 
@@ -160,21 +160,21 @@ class PureToneBlock extends BlockBase {
   int pulseLen;
   int pulses;
 
-  PureToneBlock(int index, BinaryReader reader) : super(index, reader);
+  PureToneBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
-  void _loadData(BinaryReader reader) {
-    pulseLen = reader.readUint16();
-    pulses = reader.readUint16();
+  void _loadData(ReadBuffer reader) {
+    pulseLen = reader.getUint16();
+    pulses = reader.getUint16();
   }
 }
 
 class StandardSpeedDataBlock extends DataBlock {
-  StandardSpeedDataBlock(int index, BinaryReader reader) : super(index, reader);
+  StandardSpeedDataBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
-  void _loadData(BinaryReader reader) {
-    _tailMs = reader.readUint16();
+  void _loadData(ReadBuffer reader) {
+    _tailMs = reader.getUint16();
     super._loadData(reader);
   }
 }
@@ -182,30 +182,30 @@ class StandardSpeedDataBlock extends DataBlock {
 class TextDescriptionBlock extends BlockBase {
   String description;
 
-  TextDescriptionBlock(int index, BinaryReader reader) : super(index, reader);
+  TextDescriptionBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
-  void _loadData(BinaryReader reader) {
-    var length = reader.readUint8();
-    description = reader.readAsString(length);
+  void _loadData(ReadBuffer reader) {
+    var length = reader.getUint8();
+    description = String.fromCharCodes(reader.getUint8List(length));
   }
 }
 
 class TurboSpeedDataBlock extends StandardSpeedDataBlock {
-  TurboSpeedDataBlock(int index, BinaryReader reader) : super(index, reader);
+  TurboSpeedDataBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
-  void _loadData(BinaryReader reader) {
-    _pilotPulseLen = reader.readUint16();
-    _firstSyncLen = reader.readUint16();
-    _secondSyncLen = reader.readUint16();
-    _zeroLen = reader.readUint16();
-    _oneLen = reader.readUint16();
-    _pilotLen = reader.readUint16();
-    _rem = reader.readUint8();
-    _tailMs = reader.readUint16();
-    var bytes = reader.readUint8Array(3);
+  void _loadData(ReadBuffer reader) {
+    _pilotPulseLen = reader.getUint16();
+    _firstSyncLen = reader.getUint16();
+    _secondSyncLen = reader.getUint16();
+    _zeroLen = reader.getUint16();
+    _oneLen = reader.getUint16();
+    _pilotLen = reader.getUint16();
+    _rem = reader.getUint8();
+    _tailMs = reader.getUint16();
+    var bytes = reader.getUint8List(3);
     var length = (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
-    _data = reader.readUint8Array(length);
+    _data = reader.getUint8List(length);
   }
 }

@@ -1,6 +1,6 @@
 name: zx_tape_to_wav
-description: Conversion library of .TAP/.TZX files (a ZX-Spectrum emulator data format) into .WAV sound files.
-version: 1.0.2
+description: The conversion library of .TAP/.TZX files (a ZX-Spectrum emulator data format) into .WAV sound files.
+version: 1.0.3
 
 homepage: https://github.com/semack/zx_tape_to_wav
 

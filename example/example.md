@@ -1,3 +1,4 @@
+```dart
 import 'dart:io';
 
 import 'package:zx_tape_to_wav/zx_tape_to_wav.dart';
@@ -11,3 +12,4 @@ void main() async {
               tape.toWavBytes(frequency: 44100, amplifySoundSignal: true))
           .then((output) => new File(outputFileName).writeAsBytes(output)));
 }
+```

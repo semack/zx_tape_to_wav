@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'lib/binary_reader.dart';
@@ -10,7 +9,7 @@ enum TapeFileType { unknown, tap, tzx }
 class ZxTape {
   BinaryReader _reader;
 
-  var _blocks = new List<BlockBase>();
+  List<BlockBase> _blocks = [];
 
   List<BlockBase> get blocks => _blocks;
 
@@ -18,15 +17,7 @@ class ZxTape {
 
   TapeFileType get tapeFileType => _tapeFileType;
 
-  static Future<ZxTape> createFromFile(String filePath) async {
-    var sourceFile = new File(filePath);
-    var result = await sourceFile.readAsBytes().then((bytes) async {
-      return await createFromBytes(bytes);
-    });
-    return result;
-  }
-
-  static Future<ZxTape> createFromBytes(Uint8List bytes) async {
+  static Future<ZxTape> create(Uint8List bytes) async {
     var tape = ZxTape._create(bytes.buffer.asByteData());
     await tape._load();
     return tape;
@@ -49,14 +40,7 @@ class ZxTape {
     }
   }
 
-  Future saveToWavFile(String filePath,
-      {int frequency = 22050, bool amplifySoundSignal = false}) async {
-    var bytes = await getWavBytes(frequency: frequency);
-    var file = new File(filePath);
-    await file.writeAsBytes(bytes);
-  }
-
-  Future<Uint8List> getWavBytes(
+  Future<Uint8List> toWavBytes(
       {int frequency = 22050, bool amplifySoundSignal = false}) async {
     var builder = new WavBuilder(blocks, frequency, amplifySoundSignal);
     return builder.toBytes();

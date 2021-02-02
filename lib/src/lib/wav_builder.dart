@@ -7,7 +7,7 @@ class WavBuilder {
   List<BlockBase> _blocks;
   int _frequency;
   bool _amplifySoundSignal;
-  final _bytes = new List<int>();
+  final List<int> _bytes = [];
 
   WavBuilder(List<BlockBase> blocks, int frequency, bool amplifySoundSignal) {
     _blocks = blocks;
@@ -105,8 +105,8 @@ class WavBuilder {
         byteRate = _frequency * blockAlign,
         bitsPerSample = BIT_RATE;
 
-    var header = new List<int>();
-    var utf8encoder = new Utf8Encoder();
+    final List<int> header = [];
+    final utf8encoder = new Utf8Encoder();
 
     header.addAll(utf8encoder.convert('RIFF'));
     header.addAll(_numberAsByteList(_bytes.length - RIFF_CHUNK_SIZE_INDEX, 4));

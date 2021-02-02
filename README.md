@@ -1,11 +1,13 @@
-# zx_tape_to_wav  [![License Apache 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-green.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+# zx_tape_to_wav  [![License Apache 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 Easy Flutter library to convert [.TAP](http://fileformats.archiveteam.org/wiki/TAP_(ZX_Spectrum)) / [.TZX](http://fileformats.archiveteam.org/wiki/TZX) files (a data format for ZX-Spectrum emulator) into [sound WAV file](https://en.wikipedia.org/wiki/WAV).
 
 ### Example of usage
 ```dart
-    var tape = await ZxTape.createFromFile('roms/RENEGADE.tzx');
-    await tape.saveToWavFile('output/RENEGADE.wav');
+    await new File('roms/RENEGADE.tzx').readAsBytes()
+        .then((input) => ZxTape.create(input)
+        .then((tape) => tape.toWavBytes(frequency:44100))
+        .then((output) => new File('output/RENEGADE.wav').writeAsBytes(output)));
 ```
 
 ## License

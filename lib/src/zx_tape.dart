@@ -11,12 +11,16 @@ class ZxTape {
 
   List<BlockBase> _blocks = [];
 
+  /// A list of recognized data blocks
   List<BlockBase> get blocks => _blocks;
 
   var _tapeFileType = TapeFileType.unknown;
 
+  /// A type of source byte array (TAP or TZX)
   TapeFileType get tapeFileType => _tapeFileType;
 
+  /// Static method of creating an instance of ZxTape object.
+  /// Incoming byte array must be specified.
   static Future<ZxTape> create(Uint8List bytes) async {
     var tape = ZxTape._create(bytes.buffer.asByteData());
     await tape._load();
@@ -40,6 +44,7 @@ class ZxTape {
     }
   }
 
+  /// Return WAV content as array bytes.
   Future<Uint8List> toWavBytes(
       {int frequency = 22050, bool amplifySoundSignal = false}) async {
     var builder = new WavBuilder(blocks, frequency, amplifySoundSignal);

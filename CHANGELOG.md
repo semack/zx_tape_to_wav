@@ -1,3 +1,7 @@
+## 1.0.6
+### Improved
+* Try to fix pub get error.
+
 ## 1.0.5
 ### Improved
 * Updated readme.

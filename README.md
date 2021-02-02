@@ -1,4 +1,4 @@
-# zx_tape_to_wav  [![License Apache 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0) ![Development](https://github.com/semack/zx_tape_to_wav/workflows/Development/badge.svg?branch=development) [Publish to PUB.DEV](https://github.com/semack/zx_tape_to_wav/workflows/Publish%20to%20PUB.DEV/badge.svg?branch=master)
+# zx_tape_to_wav  [![License Apache 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-green.svg)](https://www.apache.org/licenses/LICENSE-2.0) ![Development](https://github.com/semack/zx_tape_to_wav/workflows/Development/badge.svg?branch=development) ![Publish to PUB.DEV](https://github.com/semack/zx_tape_to_wav/workflows/Publish%20to%20PUB.DEV/badge.svg?branch=master)
 
 Easy Flutter library to convert [.TAP/.TZX](https://documentation.help/BASin/format_tape.html) files (a data format for ZX-Spectrum emulator) into [sound WAV file](https://en.wikipedia.org/wiki/WAV).
 

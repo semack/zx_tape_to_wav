@@ -27,17 +27,19 @@ class WavBuilder {
       lo = 0x40;
     }
     if (block is DataBlock) {
-      // pilot
-      var signalState = hi;
-      for (var i = 0; i < block.pilotLen; i++) {
-        _doSignal(signalState, block.pilotPulseLen);
-        signalState = signalState == hi ? lo : hi;
-      }
-      if (signalState == lo) _doSignal(lo, block.pilotPulseLen);
+      if (block.pilotLen != null && block.pilotLen > 0) {
+        // pilot
+        var signalState = hi;
+        for (var i = 0; i < block.pilotLen; i++) {
+          _doSignal(signalState, block.pilotPulseLen);
+          signalState = signalState == hi ? lo : hi;
+        }
+        if (signalState == lo) _doSignal(lo, block.pilotPulseLen);
 
-      // sync
-      _doSignal(hi, block.firstSyncLen);
-      _doSignal(lo, block.secondSyncLen);
+        // sync
+        _doSignal(hi, block.firstSyncLen);
+        _doSignal(lo, block.secondSyncLen);
+      }
 
       // writing data
       block.data.forEach((byte) {

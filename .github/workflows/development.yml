@@ -15,5 +15,6 @@ jobs:
       - uses: subosito/flutter-action@v1.4.0
         with:
           flutter-version: '1.22.6'
+      - run: rm -rf example
       - run: flutter pub get
       - run: flutter test

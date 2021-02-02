@@ -1,0 +1,19 @@
+name: Development
+
+on:
+  push:
+    branches: [ development ]
+  pull_request:
+    branches: [ developemnt ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1.4.0
+        with:
+          flutter-version: '1.22.6'
+      - run: flutter pub get
+      - run: flutter test

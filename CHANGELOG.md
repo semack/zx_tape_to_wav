@@ -1,3 +1,8 @@
+## 1.0.5
+### Improved
+* Updated readme.
+* Add build scripts
+
 ## 1.0.4
 ### Improved
 * Deep refactoring, removed binary reader as not needed.

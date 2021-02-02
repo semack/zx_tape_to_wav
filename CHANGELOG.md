@@ -1,3 +1,8 @@
-## [1.0.0] 
+## 1.0.1
+### Fixed
+* Improved file type checking.
+### Improved
+* Added documentation.
 
-- Initial version.
+## 1.0.0
+* Initial version.

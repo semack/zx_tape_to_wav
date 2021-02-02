@@ -20,9 +20,6 @@ void main() async {
 }
 ```
 
-## License
-Please see [LICENSE](LICENSE).
-
 ## Contribute
 Contributions are welcome. Just open an Issue or submit a PR. 
 

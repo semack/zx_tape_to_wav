@@ -47,18 +47,20 @@ class ZxTape {
   }
 
   Future<TapeFileType> _detectFileType() async {
-    // checking tzx
-    var reader = BinaryReader(_reader.raw);
-    var magic = reader.readInt64();
-    if (magic == 0x1a2165706154585a) {
-      // skipping header, setting zero position for rich data
-      _reader.skip(10);
-      return TapeFileType.tzx;
-    }
-
-    reader = BinaryReader(_reader.raw);
-    var testBlock = new DataBlock(0, reader);
-    if (testBlock.isCheckSumValid) return TapeFileType.tap;
+    try {
+      // checking tzx
+      var reader = BinaryReader(_reader.raw);
+      var magic = reader.readInt64();
+      if (magic == 0x1a2165706154585a) {
+        // skipping header, setting zero position for rich data
+        _reader.skip(10);
+        return TapeFileType.tzx;
+      }
+      // checking tap
+      reader = BinaryReader(_reader.raw);
+      var testBlock = new DataBlock(0, reader);
+      if (testBlock.isCheckSumValid) return TapeFileType.tap;
+    } catch (e) {}
 
     return TapeFileType.unknown;
   }

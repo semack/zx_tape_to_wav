@@ -1,3 +1,7 @@
+## 1.0.7
+### Fixed no pubspec.yaml error
+* Typos.
+* 
 ## 1.0.6
 ### Improved
 * Try to fix pub get error.

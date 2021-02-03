@@ -2,7 +2,7 @@
 
 Easy Flutter library to convert [.TAP/.TZX](https://documentation.help/BASin/format_tape.html) files (a data format for ZX-Spectrum emulator) into [sound WAV file](https://en.wikipedia.org/wiki/WAV).
 
-### Usage
+## Usage
 A simple usage example:
 ```dart
 import 'dart:io';

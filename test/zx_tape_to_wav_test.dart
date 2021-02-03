@@ -13,7 +13,7 @@ void main() async {
   test('test tap conversion', () async {
     await new File('example/assets/roms/RENEGATE.tap').readAsBytes().then(
         (input) => ZxTape.create(input)
-            .then((tape) => tape.toWavBytes(frequency: 44100))
+            .then((tape) => tape.toWavBytes(frequency: 44100, amplifySoundSignal: true))
             .then((output) => new File('example/assets/out/RENEGATE-tap.wav')
                 .writeAsBytes(output)));
   });

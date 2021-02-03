@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'lib/blocks.dart';
 import 'lib/wav_builder.dart';
 
-enum TapeFileType { unknown, tap, tzx }
+enum TapeType { unknown, tap, tzx }
 
 class ZxTape {
   ReadBuffer _reader;
@@ -15,10 +15,10 @@ class ZxTape {
   /// A list of recognized data blocks
   List<BlockBase> get blocks => _blocks;
 
-  var _tapeFileType = TapeFileType.unknown;
+  var _tapeType = TapeType.unknown;
 
   /// A type of source byte array (TAP or TZX)
-  TapeFileType get tapeFileType => _tapeFileType;
+  TapeType get tapeType => _tapeType;
 
   /// Static method of creating an instance of ZxTape object.
   /// Incoming byte array must be specified.
@@ -33,8 +33,8 @@ class ZxTape {
   }
 
   Future _load() async {
-    _tapeFileType = await _detectFileType();
-    if (_tapeFileType == TapeFileType.unknown)
+    _tapeType = await _detectFileType();
+    if (_tapeType == TapeType.unknown)
       throw new ArgumentError('Incompatible data format.');
 
     var index = 0;
@@ -52,7 +52,7 @@ class ZxTape {
     return builder.toBytes();
   }
 
-  Future<TapeFileType> _detectFileType() async {
+  Future<TapeType> _detectFileType() async {
     try {
       // checking tzx
       var reader = ReadBuffer(_reader.data);
@@ -60,22 +60,22 @@ class ZxTape {
       if (magic == 0x1a2165706154585a) {
         // skipping header, setting zero position for rich data
         _reader.getUint8List(10);
-        return TapeFileType.tzx;
+        return TapeType.tzx;
       }
       // checking tap
       reader = ReadBuffer(_reader.data);
       var testBlock = new DataBlock(0, reader);
-      if (testBlock.isCheckSumValid) return TapeFileType.tap;
+      if (testBlock.isCheckSumValid) return TapeType.tap;
     } catch (e) {}
 
-    return TapeFileType.unknown;
+    return TapeType.unknown;
   }
 
   Future<BlockBase> _readBlock(int index) async {
-    switch (_tapeFileType) {
-      case TapeFileType.tap:
+    switch (_tapeType) {
+      case TapeType.tap:
         return new DataBlock(index, _reader);
-      case TapeFileType.tzx:
+      case TapeType.tzx:
         var blockType = _reader.getUint8();
         switch (blockType) {
           case 0x10:

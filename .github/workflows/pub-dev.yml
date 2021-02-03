@@ -1,4 +1,4 @@
-name: Publish to PUB.DEV
+name: publish
 
 on:
   push:

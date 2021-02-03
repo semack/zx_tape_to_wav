@@ -17,4 +17,4 @@ jobs:
           flutter-version: '1.22.6'
       - run: find -maxdepth 6 -ls && rm -rf example
       - run: flutter pub get
-      - run: flutter test
+      - run: sudo flutter test

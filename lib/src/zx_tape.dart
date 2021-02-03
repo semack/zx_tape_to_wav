@@ -10,10 +10,10 @@ enum TapeType { unknown, tap, tzx }
 class ZxTape {
   ReadBuffer _reader;
 
-  List<BlockBase> _blocks = [];
+  final List<BlockBase> _blocks = [];
 
   /// A list of recognized data blocks
-  List<BlockBase> get blocks => _blocks;
+  Iterable<BlockBase> get blocks => _blocks;
 
   var _tapeType = TapeType.unknown;
 

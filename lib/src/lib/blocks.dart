@@ -103,14 +103,35 @@ class GroupEndBlock extends BlockBase {
   GroupEndBlock(int index, ReadBuffer reader) : super(index, reader);
 }
 
+class MyVector {
+  final x;
+  final y;
+
+  const MyVector(this.x, this.y);
+}
+
+class HardwareInfo {
+  final int hardwareType;
+  final int hardwareId;
+  final int hardwareInfo;
+
+  HardwareInfo(this.hardwareType, this.hardwareId, this.hardwareInfo);
+}
+
 class HardwareTypeBlock extends BlockBase {
   HardwareTypeBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  Iterable<HardwareInfo> get hardwareInfo => _hardwareInfo;
+  List<HardwareInfo> _hardwareInfo = [];
 
   @override
   void _loadData(ReadBuffer reader) {
     var length = reader.getUint8();
-    // skip block data
-    reader.getUint8List(length * 3);
+    for (int i = 0; i < length; i++) {
+      var info = new HardwareInfo(
+          reader.getUint8(), reader.getUint8(), reader.getUint8());
+      _hardwareInfo.add(info);
+    }
   }
 }
 

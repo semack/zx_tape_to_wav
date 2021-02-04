@@ -1,4 +1,7 @@
-## 1.0.9
+## 1.0.11
+* Implemented parsing HardwareType block.
+
+## 1.0.10
 * Blocks property made iterable.
 
 ## 1.0.9

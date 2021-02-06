@@ -1,4 +1,4 @@
-## 1.0.11
+## 1.0.12
 * Increased upper SDK version
 
 ## 1.0.11

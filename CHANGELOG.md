@@ -1,4 +1,7 @@
 ## 1.0.11
+* Increased upper SDK version
+
+## 1.0.11
 * Implemented parsing HardwareType block.
 
 ## 1.0.10

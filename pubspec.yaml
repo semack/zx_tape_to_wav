@@ -5,7 +5,7 @@ version: 1.0.11
 homepage: https://github.com/semack/zx_tape_to_wav
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.7.0 <4.0.0"
   flutter: ">=1.17.0"
 
 dependencies:

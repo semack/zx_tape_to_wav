@@ -1,3 +1,6 @@
+## 1.0.13
+* Rollback SDK version
+
 ## 1.0.12
 * Increased upper SDK version
 

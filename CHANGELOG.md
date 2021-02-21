@@ -1,3 +1,6 @@
+## 1.0.14
+* Removed tap control sum check
+
 ## 1.0.13
 * Rollback SDK version
 

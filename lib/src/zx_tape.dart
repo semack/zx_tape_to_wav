@@ -65,7 +65,8 @@ class ZxTape {
       // checking tap
       reader = ReadBuffer(_reader.data);
       var testBlock = new DataBlock(0, reader);
-      if (testBlock.isCheckSumValid) return TapeType.tap;
+      // if (testBlock.isCheckSumValid) 
+      return TapeType.tap;
     } catch (e) {}
 
     return TapeType.unknown;

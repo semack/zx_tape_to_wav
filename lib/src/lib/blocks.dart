@@ -33,7 +33,7 @@ class DataBlock extends BlockBase {
   int _oneLen;
 
   int get oneLen => _oneLen;
-  int _tailMs = 1000;
+  int _tailMs;
 
   int get tailMs => _tailMs;
   int _rem;
@@ -228,8 +228,9 @@ class StandardSpeedDataBlock extends DataBlock {
 
   @override
   void _loadData(ReadBuffer reader) {
-    _tailMs = reader.getUint16();
+    var tailMs = reader.getUint16();
     super._loadData(reader);
+    _tailMs = tailMs;
   }
 }
 

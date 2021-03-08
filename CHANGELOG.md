@@ -1,3 +1,6 @@
+## 1.0.19
+* Added progress event. Reverted back checking CheckSum.
+
 ## 1.0.17
 * Added Loop fixes
 

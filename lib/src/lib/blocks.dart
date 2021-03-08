@@ -18,28 +18,28 @@ abstract class BlockBase {
 class DataBlock extends BlockBase {
   DataBlock(int index, ReadBuffer reader) : super(index, reader);
 
-  int _pilotPulseLen = 2168;
+  int _pilotPulseLen;
 
   int get pilotPulseLen => _pilotPulseLen;
-  int _firstSyncLen =667;
+  int _firstSyncLen;
 
   int get firstSyncLen => _firstSyncLen;
-  int _secondSyncLen = 735;
+  int _secondSyncLen;
 
   int get secondSyncLen => _secondSyncLen;
-  int _zeroLen = 855;
+  int _zeroLen;
 
   int get zeroLen => _zeroLen;
-  int _oneLen = 1710;
+  int _oneLen;
 
   int get oneLen => _oneLen;
   int _tailMs = 1000;
 
   int get tailMs => _tailMs;
-  int _rem = 8;
+  int _rem;
 
   int get rem => _rem;
-  int _pilotLen = 8083;
+  int _pilotLen;
 
   int get pilotLen => _pilotLen;
   Uint8List _data;
@@ -54,6 +54,14 @@ class DataBlock extends BlockBase {
 
   @override
   void _loadData(ReadBuffer reader) {
+    _pilotPulseLen = 2168;
+    _firstSyncLen = 667;
+    _secondSyncLen = 735;
+    _zeroLen = 855;
+    _oneLen = 1710;
+    _tailMs = 1000;
+    _rem = 8;
+    _pilotLen = 8083;
     var length = reader.getUint16();
     _data = reader.getUint8List(length);
     if (_data[0] >= 128) _pilotLen = 3223;
@@ -102,7 +110,7 @@ class LoopStartBlock extends BlockBase {
 
   @override
   void _loadData(ReadBuffer reader) {
-    repetitions  = reader.getUint16();
+    repetitions = reader.getUint16();
   }
 }
 
@@ -113,7 +121,7 @@ class JumpToBlock extends BlockBase {
 
   @override
   void _loadData(ReadBuffer reader) {
-    offset  = reader.getUint16();
+    offset = reader.getUint16();
   }
 }
 
@@ -127,7 +135,6 @@ class LoopEndBlock extends BlockBase {
 }
 
 class GlueBlock extends BlockBase {
-
   GlueBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
@@ -196,8 +203,7 @@ class PureDataBlock extends DataBlock {
     _zeroLen = reader.getUint16();
     _oneLen = reader.getUint16();
     _rem = reader.getUint8();
-    //_tailMs =
-        reader.getUint16();
+    _tailMs = reader.getUint16();
     var bytes = reader.getUint8List(3);
     var length = (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
     _data = reader.getUint8List(length);
@@ -222,8 +228,7 @@ class StandardSpeedDataBlock extends DataBlock {
 
   @override
   void _loadData(ReadBuffer reader) {
-    //_tailMs =
-        reader.getUint16();
+    _tailMs = reader.getUint16();
     super._loadData(reader);
   }
 }
@@ -266,8 +271,7 @@ class TurboSpeedDataBlock extends StandardSpeedDataBlock {
     _oneLen = reader.getUint16();
     _pilotLen = reader.getUint16();
     _rem = reader.getUint8();
-    //_tailMs =
-        reader.getUint16();
+    _tailMs = reader.getUint16();
     var bytes = reader.getUint8List(3);
     var length = (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
     _data = reader.getUint8List(length);

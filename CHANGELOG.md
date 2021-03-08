@@ -1,3 +1,6 @@
+## 1.0.17
+* Added Loop fixes
+
 ## 1.0.16
 * Added JumpToBlocks
 

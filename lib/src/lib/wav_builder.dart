@@ -131,7 +131,10 @@ class WavBuilder {
     for (var i = 0; i < _blocks.length; i++) {
       var block = _blocks[i];
       if (block is LoopStartBlock)
-        loopStartBlock = block;
+        {
+          loopStartBlock = block;
+          block.repetitions--;
+        }
       else if (block is LoopEndBlock) {
         loopStartBlock.repetitions--;
         if (loopStartBlock.repetitions > 0) i = loopStartBlock.index + 1;

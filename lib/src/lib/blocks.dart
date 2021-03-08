@@ -18,28 +18,28 @@ abstract class BlockBase {
 class DataBlock extends BlockBase {
   DataBlock(int index, ReadBuffer reader) : super(index, reader);
 
-  int _pilotPulseLen;
+  int _pilotPulseLen = 2168;
 
   int get pilotPulseLen => _pilotPulseLen;
-  int _firstSyncLen;
+  int _firstSyncLen =667;
 
   int get firstSyncLen => _firstSyncLen;
-  int _secondSyncLen;
+  int _secondSyncLen = 735;
 
   int get secondSyncLen => _secondSyncLen;
-  int _zeroLen;
+  int _zeroLen = 855;
 
   int get zeroLen => _zeroLen;
-  int _oneLen;
+  int _oneLen = 1710;
 
   int get oneLen => _oneLen;
-  int _tailMs;
+  int _tailMs = 1000;
 
   int get tailMs => _tailMs;
-  int _rem;
+  int _rem = 9 ;
 
   int get rem => _rem;
-  int _pilotLen;
+  int _pilotLen = 8083;
 
   int get pilotLen => _pilotLen;
   Uint8List _data;
@@ -54,14 +54,6 @@ class DataBlock extends BlockBase {
 
   @override
   void _loadData(ReadBuffer reader) {
-    _pilotPulseLen = 2168;
-    _firstSyncLen = 667;
-    _secondSyncLen = 735;
-    _zeroLen = 855;
-    _oneLen = 1710;
-    _tailMs = 1000;
-    _rem = 8;
-    _pilotLen = 8083;
     var length = reader.getUint16();
     _data = reader.getUint8List(length);
     if (_data[0] >= 128) _pilotLen = 3223;

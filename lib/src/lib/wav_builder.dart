@@ -5,16 +5,15 @@ import 'blocks.dart';
 
 class WavBuilder {
   List<BlockBase> _blocks;
-  int _frequency;
-  bool _amplifySoundSignal;
+  final bool _amplifySoundSignal;
+  final Function(double percents) _progress;
   final List<int> _bytes = [];
+  final int _frequency;
 
-  WavBuilder(List<BlockBase> blocks, int frequency, bool amplifySoundSignal) {
+  WavBuilder(List<BlockBase> blocks, this._frequency, this._amplifySoundSignal, this._progress) {
     _blocks = blocks;
-    if (frequency < 11025)
+    if (_frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $_frequency');
-    _frequency = frequency;
-    _amplifySoundSignal = amplifySoundSignal;
   }
 
   void _addBlockSoundData(BlockBase block) {
@@ -137,8 +136,13 @@ class WavBuilder {
         if (loopStartBlock.repetitions > 0) i = loopStartBlock.index;
       } else if (block is JumpToBlock)
         i += block.offset;
-      else
+      else {
         _addBlockSoundData(block);
+        if (_progress != null) {
+          var percents = (100 / _blocks.length) * i;
+          _progress(percents);
+        }
+      }
     }
     _fillHeader();
     return Uint8List.fromList(_bytes);

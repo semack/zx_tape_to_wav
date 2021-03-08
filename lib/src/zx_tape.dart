@@ -47,8 +47,11 @@ class ZxTape {
 
   /// Returns WAV content as array of bytes.
   Future<Uint8List> toWavBytes(
-      {int frequency = 22050, bool amplifySoundSignal = false}) async {
-    var builder = new WavBuilder(blocks, frequency, amplifySoundSignal);
+      {int frequency = 22050,
+      bool amplifySoundSignal = false,
+      Function(double percents) progress}) async {
+    var builder =
+        new WavBuilder(blocks, frequency, amplifySoundSignal, progress);
     return builder.toBytes();
   }
 
@@ -64,9 +67,8 @@ class ZxTape {
       }
       // checking tap
       reader = ReadBuffer(_reader.data);
-      var testBlock = new DataBlock(0, reader);
-      // if (testBlock.isCheckSumValid)
-      return TapeType.tap;
+      var testBlock = DataBlock(0, reader);
+      if (testBlock.isCheckSumValid) return TapeType.tap;
     } catch (e) {}
 
     return TapeType.unknown;

@@ -131,16 +131,14 @@ class WavBuilder {
     for (var i = 0; i < _blocks.length; i++) {
       var block = _blocks[i];
       if (block is LoopStartBlock)
-        {
-          loopStartBlock = block;
-          block.repetitions--;
-        }
+        loopStartBlock = block;
       else if (block is LoopEndBlock) {
         loopStartBlock.repetitions--;
-        if (loopStartBlock.repetitions > 0) i = loopStartBlock.index + 1;
-      } else if (block is JumpToBlock) i += block.offset;
-
-      _addBlockSoundData(block);
+        if (loopStartBlock.repetitions > 0) i = loopStartBlock.index;
+      } else if (block is JumpToBlock)
+        i += block.offset;
+      else
+        _addBlockSoundData(block);
     }
     _fillHeader();
     return Uint8List.fromList(_bytes);

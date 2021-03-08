@@ -36,7 +36,7 @@ class DataBlock extends BlockBase {
   int _tailMs = 1000;
 
   int get tailMs => _tailMs;
-  int _rem = 9 ;
+  int _rem = 8;
 
   int get rem => _rem;
   int _pilotLen = 8083;

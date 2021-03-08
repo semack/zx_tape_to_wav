@@ -103,11 +103,34 @@ class GroupEndBlock extends BlockBase {
   GroupEndBlock(int index, ReadBuffer reader) : super(index, reader);
 }
 
-class MyVector {
-  final x;
-  final y;
+class LoopStartBlock extends BlockBase {
+  int repetitions;
 
-  const MyVector(this.x, this.y);
+  LoopStartBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    repetitions  = reader.getUint16();
+  }
+}
+
+class LoopEndBlock extends BlockBase {
+  @override
+  void _loadData(ReadBuffer reader) {
+    // nothing to do
+  }
+
+  LoopEndBlock(int index, ReadBuffer reader) : super(index, reader);
+}
+
+class GlueBlock extends BlockBase {
+
+  GlueBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    reader.getUint8List(9);
+  }
 }
 
 class HardwareInfo {
@@ -209,6 +232,20 @@ class TextDescriptionBlock extends BlockBase {
   void _loadData(ReadBuffer reader) {
     var length = reader.getUint8();
     description = String.fromCharCodes(reader.getUint8List(length));
+  }
+}
+
+class MessageBlock extends BlockBase {
+  int timeSec;
+  String message;
+
+  MessageBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    var timeSec = reader.getUint8();
+    var length = reader.getUint8();
+    message = String.fromCharCodes(reader.getUint8List(length));
   }
 }
 

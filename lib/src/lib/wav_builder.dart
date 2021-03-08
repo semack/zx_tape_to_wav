@@ -127,9 +127,16 @@ class WavBuilder {
   }
 
   Uint8List toBytes() {
-    _blocks.forEach((block) {
+    LoopStartBlock loopStartBlock;
+    for (var i = 0; i < _blocks.length; i++) {
+      var block = _blocks[i];
+      if (block is LoopStartBlock) loopStartBlock = block;
+      if (block is LoopEndBlock) {
+        loopStartBlock.repetitions -= 1;
+        if (loopStartBlock.repetitions > 0) i = loopStartBlock.index + 1;
+      }
       _addBlockSoundData(block);
-    });
+    }
     _fillHeader();
     return Uint8List.fromList(_bytes);
   }

@@ -1,3 +1,6 @@
+## 1.0.15
+* Added LoopStart, LoopEnd, Message ang Glue blocks
+
 ## 1.0.14
 * Removed tap control sum check
 

@@ -65,7 +65,7 @@ class ZxTape {
       // checking tap
       reader = ReadBuffer(_reader.data);
       var testBlock = new DataBlock(0, reader);
-      // if (testBlock.isCheckSumValid) 
+      // if (testBlock.isCheckSumValid)
       return TapeType.tap;
     } catch (e) {}
 
@@ -90,17 +90,26 @@ class ZxTape {
           case 0x14:
             return new PureDataBlock(index, _reader);
           case 0x20:
+          case 0x2A:
             return new PauseOrStopTheTapeBlock(index, _reader);
           case 0x21:
             return new GroupStartBlock(index, _reader);
           case 0x22:
             return new GroupEndBlock(index, _reader);
+          case 0x24:
+            return new LoopStartBlock(index, _reader);
+          case 0x25:
+            return new LoopEndBlock(index, _reader);
           case 0x30:
             return new TextDescriptionBlock(index, _reader);
+          case 0x31:
+            return new MessageBlock(index, _reader);
           case 0x32:
             return new ArchiveInfoBlock(index, _reader);
           case 0x33:
             return new HardwareTypeBlock(index, _reader);
+          case 0x5A:
+            return new GlueBlock(index, _reader);
           default:
             throw new ArgumentError(
                 'Unexpected type $blockType of block #$index');

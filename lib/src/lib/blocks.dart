@@ -204,7 +204,8 @@ class PureDataBlock extends DataBlock {
     _zeroLen = reader.getUint16();
     _oneLen = reader.getUint16();
     _rem = reader.getUint8();
-    _tailMs = reader.getUint16();
+    //_tailMs =
+        reader.getUint16();
     var bytes = reader.getUint8List(3);
     var length = (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
     _data = reader.getUint8List(length);
@@ -229,7 +230,8 @@ class StandardSpeedDataBlock extends DataBlock {
 
   @override
   void _loadData(ReadBuffer reader) {
-    _tailMs = reader.getUint16();
+    //_tailMs =
+        reader.getUint16();
     super._loadData(reader);
   }
 }
@@ -272,7 +274,8 @@ class TurboSpeedDataBlock extends StandardSpeedDataBlock {
     _oneLen = reader.getUint16();
     _pilotLen = reader.getUint16();
     _rem = reader.getUint8();
-    _tailMs = reader.getUint16();
+    //_tailMs =
+        reader.getUint16();
     var bytes = reader.getUint8List(3);
     var length = (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
     _data = reader.getUint8List(length);

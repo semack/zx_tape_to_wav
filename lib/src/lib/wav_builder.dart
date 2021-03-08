@@ -10,7 +10,8 @@ class WavBuilder {
   final List<int> _bytes = [];
   final int _frequency;
 
-  WavBuilder(List<BlockBase> blocks, this._frequency, this._amplifySoundSignal, this._progress) {
+  WavBuilder(List<BlockBase> blocks, this._frequency, this._amplifySoundSignal,
+      this._progress) {
     _blocks = blocks;
     if (_frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $_frequency');
@@ -139,7 +140,8 @@ class WavBuilder {
       else {
         _addBlockSoundData(block);
         if (_progress != null) {
-          var percents = (100 / _blocks.length) * i;
+          var percents = 100.0;
+          if (i < _blocks.length - 1) percents = (100 / _blocks.length) * i;
           _progress(percents);
         }
       }

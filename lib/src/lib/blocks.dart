@@ -114,6 +114,17 @@ class LoopStartBlock extends BlockBase {
   }
 }
 
+class JumpToBlock extends BlockBase {
+  int offset;
+
+  JumpToBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    offset  = reader.getUint16();
+  }
+}
+
 class LoopEndBlock extends BlockBase {
   @override
   void _loadData(ReadBuffer reader) {
@@ -236,14 +247,14 @@ class TextDescriptionBlock extends BlockBase {
 }
 
 class MessageBlock extends BlockBase {
-  int timeSec;
+  int durationSec;
   String message;
 
   MessageBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
-    var timeSec = reader.getUint8();
+    durationSec = reader.getUint8();
     var length = reader.getUint8();
     message = String.fromCharCodes(reader.getUint8List(length));
   }

@@ -1,3 +1,6 @@
+## 1.0.16
+* Added JumpToBlocks
+
 ## 1.0.15
 * Added LoopStart, LoopEnd, Message ang Glue blocks
 

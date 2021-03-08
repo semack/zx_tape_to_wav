@@ -96,6 +96,8 @@ class ZxTape {
             return new GroupStartBlock(index, _reader);
           case 0x22:
             return new GroupEndBlock(index, _reader);
+          case 0x23:
+            return new JumpToBlock(index, _reader);
           case 0x24:
             return new LoopStartBlock(index, _reader);
           case 0x25:

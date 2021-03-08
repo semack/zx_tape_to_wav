@@ -130,11 +130,13 @@ class WavBuilder {
     LoopStartBlock loopStartBlock;
     for (var i = 0; i < _blocks.length; i++) {
       var block = _blocks[i];
-      if (block is LoopStartBlock) loopStartBlock = block;
-      if (block is LoopEndBlock) {
-        loopStartBlock.repetitions -= 1;
+      if (block is LoopStartBlock)
+        loopStartBlock = block;
+      else if (block is LoopEndBlock) {
+        loopStartBlock.repetitions--;
         if (loopStartBlock.repetitions > 0) i = loopStartBlock.index + 1;
-      }
+      } else if (block is JumpToBlock) i += block.offset;
+
       _addBlockSoundData(block);
     }
     _fillHeader();

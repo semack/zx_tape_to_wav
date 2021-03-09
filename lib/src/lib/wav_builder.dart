@@ -142,8 +142,6 @@ class WavBuilder {
     _cpuTimeStamp += len * _cpuTimeBase;
 
     while (_sndTimeStamp < _cpuTimeStamp) {
-      // _bytes.add(0); // bitrate 8
-      //_bytes.add(lvl >> 8);
       _bytes.add(lvl >> 8);
       _sndTimeStamp += _sndTimeBase;
     }

@@ -18,28 +18,28 @@ abstract class BlockBase {
 class DataBlock extends BlockBase {
   DataBlock(int index, ReadBuffer reader) : super(index, reader);
 
-  int _pilotPulseLen;
+  int _pilotPulseLen = 2168;
 
   int get pilotPulseLen => _pilotPulseLen;
-  int _firstSyncLen;
+  int _firstSyncLen = 667;
 
   int get firstSyncLen => _firstSyncLen;
-  int _secondSyncLen;
+  int _secondSyncLen = 735;
 
   int get secondSyncLen => _secondSyncLen;
-  int _zeroLen;
+  int _zeroLen = 855;
 
   int get zeroLen => _zeroLen;
-  int _oneLen;
+  int _oneLen = 1710;
 
   int get oneLen => _oneLen;
-  int _tailMs;
+  int _tailMs = 1000;
 
   int get tailMs => _tailMs;
-  int _rem;
+  int _rem = 8;
 
   int get rem => _rem;
-  int _pilotLen;
+  int _pilotLen = 8083;
 
   int get pilotLen => _pilotLen;
   Uint8List _data;
@@ -54,17 +54,86 @@ class DataBlock extends BlockBase {
 
   @override
   void _loadData(ReadBuffer reader) {
-    _pilotPulseLen = 2168;
-    _firstSyncLen = 667;
-    _secondSyncLen = 735;
-    _zeroLen = 855;
-    _oneLen = 1710;
-    _tailMs = 1000;
-    _rem = 8;
-    _pilotLen = 8083;
     var length = reader.getUint16();
     _data = reader.getUint8List(length);
     if (_data[0] >= 128) _pilotLen = 3223;
+  }
+}
+
+class StandardSpeedDataBlock extends DataBlock {
+  StandardSpeedDataBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    var tailMs = reader.getUint16();
+    super._loadData(reader);
+    _tailMs = tailMs;
+  }
+}
+
+class TurboSpeedDataBlock extends DataBlock {
+  TurboSpeedDataBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    _pilotPulseLen = reader.getUint16();
+    _firstSyncLen = reader.getUint16();
+    _secondSyncLen = reader.getUint16();
+    _zeroLen = reader.getUint16();
+    _oneLen = reader.getUint16();
+    _pilotLen = reader.getUint16();
+    _rem = reader.getUint8();
+    _tailMs = reader.getUint16();
+    var bytes = reader.getUint8List(3);
+    var length = (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
+    _data = reader.getUint8List(length);
+  }
+}
+
+class PureDataBlock extends DataBlock {
+  PureDataBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  bool get isCheckSumValid => true;
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    _zeroLen = reader.getUint16();
+    _oneLen = reader.getUint16();
+    _rem = reader.getUint8();
+    _tailMs = reader.getUint16();
+    var bytes = reader.getUint8List(3);
+    var length = (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
+    _data = reader.getUint8List(length);
+    _pilotPulseLen = 0;
+    _firstSyncLen = 0;
+    _secondSyncLen = 0;
+  }
+}
+
+class PureToneBlock extends BlockBase {
+  int pulseLen;
+  int pulses;
+
+  PureToneBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    pulseLen = reader.getUint16();
+    pulses = reader.getUint16();
+  }
+}
+
+class PulseSequenceBlock extends BlockBase {
+  Uint16List pulses;
+
+  PulseSequenceBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    var length = reader.getUint8();
+    pulses = Uint16List(length);
+    for (var i = 0; i < length; i++) pulses[i] = reader.getUint16();
   }
 }
 
@@ -179,61 +248,6 @@ class PauseOrStopTheTapeBlock extends BlockBase {
   }
 }
 
-class PulseSequenceBlock extends BlockBase {
-  Uint16List pulses;
-
-  PulseSequenceBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    var length = reader.getUint8();
-    pulses = new Uint16List(length);
-    for (var i = 0; i < length; i++) pulses[i] = reader.getUint16();
-  }
-}
-
-class PureDataBlock extends DataBlock {
-  PureDataBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  bool get isCheckSumValid => true;
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    _zeroLen = reader.getUint16();
-    _oneLen = reader.getUint16();
-    _rem = reader.getUint8();
-    _tailMs = reader.getUint16();
-    var bytes = reader.getUint8List(3);
-    var length = (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
-    _data = reader.getUint8List(length);
-  }
-}
-
-class PureToneBlock extends BlockBase {
-  int pulseLen;
-  int pulses;
-
-  PureToneBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    pulseLen = reader.getUint16();
-    pulses = reader.getUint16();
-  }
-}
-
-class StandardSpeedDataBlock extends DataBlock {
-  StandardSpeedDataBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    var tailMs = reader.getUint16();
-    super._loadData(reader);
-    _tailMs = tailMs;
-  }
-}
-
 class TextDescriptionBlock extends BlockBase {
   String description;
 
@@ -257,24 +271,5 @@ class MessageBlock extends BlockBase {
     durationSec = reader.getUint8();
     var length = reader.getUint8();
     message = String.fromCharCodes(reader.getUint8List(length));
-  }
-}
-
-class TurboSpeedDataBlock extends StandardSpeedDataBlock {
-  TurboSpeedDataBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    _pilotPulseLen = reader.getUint16();
-    _firstSyncLen = reader.getUint16();
-    _secondSyncLen = reader.getUint16();
-    _zeroLen = reader.getUint16();
-    _oneLen = reader.getUint16();
-    _pilotLen = reader.getUint16();
-    _rem = reader.getUint8();
-    _tailMs = reader.getUint16();
-    var bytes = reader.getUint8List(3);
-    var length = (bytes[2] << 16) + (bytes[1] << 8) + bytes[0];
-    _data = reader.getUint8List(length);
   }
 }

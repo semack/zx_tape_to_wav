@@ -2,128 +2,29 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'blocks.dart';
+import 'extensions.dart';
 
 class WavBuilder {
   List<BlockBase> _blocks;
-  final bool _amplifySoundSignal;
   final Function(double percents) _progress;
   final List<int> _bytes = [];
   final int _frequency;
+  double _cpuTimeStamp = 0;
+  double _sndTimeStamp = 0;
+  double _cpuTimeBase = 0;
+  double _sndTimeBase = 0;
+  bool _currentLevel = false;
+  final int _cpuFreq = 3500000;
 
-  WavBuilder(List<BlockBase> blocks, this._frequency, this._amplifySoundSignal,
-      this._progress) {
-    _blocks = blocks;
+  WavBuilder(List<BlockBase> blocks, this._frequency, this._progress) {
     if (_frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $_frequency');
-  }
 
-  void _addBlockSoundData(BlockBase block) {
-    int hi, lo;
-    if (_amplifySoundSignal) {
-      hi = 0xFF;
-      lo = 0x00;
-    } else {
-      hi = 0xC0;
-      lo = 0x40;
-    }
-    if (block is DataBlock) {
-      if (block.pilotLen != null && block.pilotLen > 0) {
-        // pilot
-        var signalState = hi;
-        for (var i = 0; i < block.pilotLen; i++) {
-          _doSignal(signalState, block.pilotPulseLen);
-          signalState = signalState == hi ? lo : hi;
-        }
-        if (signalState == lo) _doSignal(lo, block.pilotPulseLen);
+    _blocks = blocks;
 
-        // sync
-        _doSignal(hi, block.firstSyncLen);
-        _doSignal(lo, block.secondSyncLen);
-      }
-
-      // writing data
-      block.data.forEach((byte) {
-        _writeDataByte(block, byte, hi, lo);
-      });
-
-      // last sync3
-      for (var i = 7; i >= 8 - block.rem; i--) {
-        var len = block.zeroLen;
-        if ((block.data[block.data.length - 1] & (1 << i)) != 0)
-          len = block.oneLen;
-        _doSignal(hi, len);
-        _doSignal(lo, len);
-      }
-
-      // adding pause
-      if (block.tailMs > 0) _writePause(block.tailMs);
-    } else if (block is PauseOrStopTheTapeBlock) {
-      _writePause(block.duration);
-    } else if (block is PulseSequenceBlock) {
-      block.pulses.forEach((pulse) {
-        _doSignal(hi, pulse);
-        _doSignal(lo, pulse);
-      });
-    } else if (block is PureToneBlock) {
-      for (var i = 0; i < block.pulses; i++) {
-        _doSignal(hi, block.pulseLen);
-        _doSignal(lo, block.pulseLen);
-      }
-    }
-  }
-
-  void _writePause(int ms) {
-    for (var i = 0; i < _frequency * (ms / 1000); i++) _bytes.add(0x00);
-  }
-
-  void _doSignal(int signalLevel, int clks) {
-    var sampleNanoSec = 1000000000 / _frequency;
-    var cpuClkNanoSec = 286;
-    var samples = (cpuClkNanoSec * clks / sampleNanoSec).round();
-
-    for (var i = 0; i < samples; i++) _bytes.add(signalLevel);
-  }
-
-  void _writeDataByte(DataBlock block, int byte, int hi, int lo) {
-    int mask = 0x80;
-
-    while (mask != 0) {
-      var len = (byte & mask) == 0 ? block.zeroLen : block.oneLen;
-      _doSignal(hi, len);
-      _doSignal(lo, len);
-      mask >>= 1;
-    }
-  }
-
-  void _fillHeader() {
-    const int NUM_CHANNELS = 1;
-    const int BIT_RATE = 8;
-    const int RIFF_CHUNK_SIZE_INDEX = 4;
-    const int SUB_CHUNK_SIZE = 16;
-    const int AUDIO_FORMAT = 1;
-    const int BYTE_SIZE = 8;
-
-    var blockAlign = NUM_CHANNELS * BIT_RATE ~/ BYTE_SIZE,
-        byteRate = _frequency * blockAlign,
-        bitsPerSample = BIT_RATE;
-
-    final List<int> header = [];
-    final utf8encoder = new Utf8Encoder();
-
-    header.addAll(utf8encoder.convert('RIFF'));
-    header.addAll(_numberAsByteList(_bytes.length - RIFF_CHUNK_SIZE_INDEX, 4));
-    header.addAll(utf8encoder.convert('WAVEfmt '));
-    header.addAll(_numberAsByteList(SUB_CHUNK_SIZE, 4));
-    header.addAll(_numberAsByteList(AUDIO_FORMAT, 2));
-    header.addAll(_numberAsByteList(NUM_CHANNELS, 2));
-    header.addAll(_numberAsByteList(_frequency, 4));
-    header.addAll(_numberAsByteList(byteRate, 4));
-    header.addAll(_numberAsByteList(blockAlign, 2));
-    header.addAll(_numberAsByteList(bitsPerSample, 2));
-    header.addAll(utf8encoder.convert('data'));
-    header.addAll(_numberAsByteList(_bytes.length, 4));
-
-    _bytes.insertAll(0, header);
+    var timeBase = _getLCM(_frequency, _cpuFreq);
+    _cpuTimeBase = timeBase / _cpuFreq;
+    _sndTimeBase = timeBase / _frequency;
   }
 
   Uint8List toBytes() {
@@ -150,13 +51,145 @@ class WavBuilder {
     return Uint8List.fromList(_bytes);
   }
 
-  static List<int> _numberAsByteList(int input, numBytes,
-      {Endian endian = Endian.little}) {
-    var output = <int>[], curByte = input;
-    for (var i = 0; i < numBytes; ++i) {
-      output.insert(endian == Endian.big ? 0 : output.length, curByte & 255);
-      curByte >>= 8;
+  void _addBlockSoundData(BlockBase block) {
+    if (block is DataBlock) {
+      if (block is! PureDataBlock) {
+        for (var i = 0; i < block.pilotLen; i++) {
+          addEdge(block.pilotPulseLen);
+        }
+        addEdge(block.firstSyncLen);
+        addEdge(block.secondSyncLen);
+      }
+
+      for (var i = 0; i < block.data.length - 1; i++) {
+        var d = block.data[i];
+        for (var j = 7; j >= 0; j--) {
+          var bit = d & (1 << j) != 0;
+
+          if (bit) {
+            addEdge(block.oneLen);
+            addEdge(block.oneLen);
+          } else {
+            addEdge(block.zeroLen);
+            addEdge(block.zeroLen);
+          }
+        }
+      }
+
+      // Last byte
+      var d = block.data[block.data.length - 1];
+
+      for (var i = 7; i >= (8 - block.rem); i--) {
+        var bit = d & (1 << i) != 0;
+
+        if (bit) {
+          addEdge(block.oneLen);
+          addEdge(block.oneLen);
+        } else {
+          addEdge(block.zeroLen);
+          addEdge(block.zeroLen);
+        }
+      }
+
+      if (block.tailMs > 0) {
+        addPause(block.tailMs);
+      }
+    } else if (block is PureToneBlock) {
+      for (var i = 0; i < block.pulses; i++) {
+        addEdge(block.pulseLen);
+      }
+    } else if (block is PulseSequenceBlock) {
+      block.pulses.forEach((pulse) {
+        addEdge(pulse);
+      });
+    } else if (block is PauseOrStopTheTapeBlock) {
+      addPause(block.duration);
     }
-    return output;
+  }
+
+  void addEdge(int len) {
+    var lvl = -16384;
+    if (_currentLevel) {
+      lvl = 16384;
+    }
+    appendLevel(len, lvl);
+    _currentLevel = !_currentLevel;
+  }
+
+  void addPause(int milliSeconds) {
+    var ll = milliSeconds - 1;
+    var msl = _cpuFreq ~/ 1000;
+    addEdge(msl);
+
+    // if last edge is fall, issue another rise for 2 ms
+    if (_currentLevel) {
+      addEdge(msl * 2);
+      ll -= 2;
+    }
+    appendLevel(ll * msl, 0);
+    _currentLevel = false;
+  }
+
+  void appendLevel(int len, int lvl) {
+    _cpuTimeStamp += len * _cpuTimeBase;
+
+    while (_sndTimeStamp < _cpuTimeStamp) {
+      //_bytes.add(0); // bitrate 8
+      _bytes.add(lvl >> 8);
+      _sndTimeStamp += _sndTimeBase;
+    }
+  }
+
+  void _fillHeader() {
+    const int NUM_CHANNELS = 1;
+    const int BIT_RATE = 8;
+    const int RIFF_CHUNK_SIZE_INDEX = 4;
+    const int SUB_CHUNK_SIZE = 16;
+    const int AUDIO_FORMAT = 1;
+    const int BYTE_SIZE = 8;
+
+    var blockAlign = NUM_CHANNELS * BIT_RATE ~/ BYTE_SIZE,
+        byteRate = _frequency * blockAlign,
+        bitsPerSample = BIT_RATE;
+
+    final List<int> header = [];
+    final utf8encoder = new Utf8Encoder();
+
+    header.addAll(utf8encoder.convert('RIFF'));
+    header.addAll((_bytes.length - RIFF_CHUNK_SIZE_INDEX).asByteList(4));
+    header.addAll(utf8encoder.convert('WAVEfmt '));
+    header.addAll(SUB_CHUNK_SIZE.asByteList(4));
+    header.addAll(AUDIO_FORMAT.asByteList(2));
+    header.addAll(NUM_CHANNELS.asByteList(2));
+    header.addAll(_frequency.asByteList(4));
+    header.addAll(byteRate.asByteList(4));
+    header.addAll(blockAlign.asByteList(2));
+    header.addAll(bitsPerSample.asByteList(2));
+    header.addAll(utf8encoder.convert('data'));
+    header.addAll(_bytes.length.asByteList(4));
+
+    _bytes.insertAll(0, header);
+  }
+
+  int _getLCM(int a, int b) {
+    if (a == b) {
+      return a;
+    }
+    var min = a;
+    var max = b;
+    if (a > b) {
+      var temp = a;
+      a = b;
+      b = temp;
+    }
+    var mm = min * max;
+    var c = max;
+    while (c < mm) {
+      if (c % min == 0 && c % max == 0) {
+        return c;
+      }
+      c += max;
+    }
+    return mm;
   }
 }

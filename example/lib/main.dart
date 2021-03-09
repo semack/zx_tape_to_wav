@@ -8,6 +8,6 @@ void main() async {
   await new File(sourceFilePath).readAsBytes().then((input) =>
       ZxTape.create(input)
           .then((tape) =>
-              tape.toWavBytes(frequency: 44100, amplifySoundSignal: true))
+              tape.toWavBytes(frequency: 44100))
           .then((output) => new File(outputFileName).writeAsBytes(output)));
 }

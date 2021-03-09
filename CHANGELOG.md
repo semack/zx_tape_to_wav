@@ -1,3 +1,6 @@
+## 2.0.0
+* New wav builder
+
 ## 1.0.19
 * Added progress event. Reverted back checking CheckSum.
 

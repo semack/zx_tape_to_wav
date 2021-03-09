@@ -1,3 +1,6 @@
+## 2.0.1
+* Updated docs and examples
+
 ## 2.0.0
 * New wav builder
 

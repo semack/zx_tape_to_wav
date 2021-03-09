@@ -114,7 +114,7 @@ class WavBuilder {
     var lo = -16384;
     if (_amplifySignal) {
       hi = 65280;
-      lo = 0;
+      lo = -65280;
     }
     var lvl = lo;
     if (_currentLevel) {
@@ -148,48 +148,34 @@ class WavBuilder {
   }
 
   void _fillHeader() {
-    const int NUM_CHANNELS = 1;
-    const int BIT_RATE = 8;
-    const int RIFF_CHUNK_SIZE_INDEX = 4;
-    const int SUB_CHUNK_SIZE = 16;
-    const int AUDIO_FORMAT = 1;
-    const int BYTE_SIZE = 8;
-
-    var blockAlign = NUM_CHANNELS * BIT_RATE ~/ BYTE_SIZE,
-        byteRate = _frequency * blockAlign,
-        bitsPerSample = BIT_RATE;
-
     final List<int> header = [];
     final utf8encoder = new Utf8Encoder();
 
-    // struct wavhdr { // defined by Microsoft, needs to match
     //   char riff[4];  // should be "RIFF"
-    //   uint32_t len8; // file length - 8
-    //   char wave[4];  // should be "WAVE"
-    //   char fmt[4];   // should be "fmt "
-    //   uint32_t fdatalen; // should be 16 (0x10)
-    //   uint16_t ftag;     // format tag, 1 = pcm
-    //   uint16_t channels; // 2 for stereo
-    //   uint32_t sps;      // samples/sec
-    //   uint32_t srate;    // sample rate in bytes/sec (block align)
-    //   uint16_t chan8;    // channels * bits/sample / 8
-    //   uint16_t bps;      // bits/sample
-    //   char data[4];      // should be "data"
-    //   uint32_t datlen;   // length of data block
-    //   // pcm data follows this
-    // } hdr;
-
     header.addAll(utf8encoder.convert('RIFF'));
-    header.addAll((_bytes.length - RIFF_CHUNK_SIZE_INDEX).asByteList(4));
-    header.addAll(utf8encoder.convert('WAVEfmt '));
-    header.addAll(SUB_CHUNK_SIZE.asByteList(4));
-    header.addAll(AUDIO_FORMAT.asByteList(2));
-    header.addAll(NUM_CHANNELS.asByteList(2));
+    //   uint32_t len8; // file length - 8
+    header.addAll((_bytes.length - 8).asByteList(4));
+    //   char wave[4];  // should be "WAVE"
+    header.addAll(utf8encoder.convert('WAVE'));
+    //   char fmt[4];   // should be "fmt "
+    header.addAll(utf8encoder.convert('fmt '));
+    //   uint32_t fdatalen; // should be 16 (0x10)
+    header.addAll(16.asByteList(4));
+    //   uint16_t ftag;     // format tag, 1 = pcm
+    header.addAll(1.asByteList(2));
+    //   uint16_t channels; // 2 for stereo
+    header.addAll(1.asByteList(2));
+    //   uint32_t sps;      // samples/sec
     header.addAll(_frequency.asByteList(4));
-    header.addAll(byteRate.asByteList(4));
-    header.addAll(blockAlign.asByteList(2));
-    header.addAll(bitsPerSample.asByteList(2));
+    //   uint32_t srate;    // sample rate in bytes/sec (block align)
+    header.addAll(_frequency.asByteList(4));
+    //   uint16_t chan8;    // channels * bits/sample / 8
+    header.addAll(1.asByteList(2));
+    //   uint16_t bps;      // bits/sample
+    header.addAll(8.asByteList(2));
+    //   char data[4];      // should be "data"
     header.addAll(utf8encoder.convert('data'));
+    //   uint32_t datlen;   // length of data block
     header.addAll(_bytes.length.asByteList(4));
 
     _bytes.insertAll(0, header);

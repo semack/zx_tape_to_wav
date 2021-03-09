@@ -112,6 +112,14 @@ class WavBuilder {
     if (_currentLevel) {
       lvl = 16384;
     }
+    // var lvl = 0;
+    // if (_currentLevel) {
+    //   lvl = 65280;
+    // }
+    // var lvl = 65280;
+    // if (_currentLevel) {
+    //   lvl = 0;
+    // }
     appendLevel(len, lvl);
     _currentLevel = !_currentLevel;
   }
@@ -134,14 +142,15 @@ class WavBuilder {
     _cpuTimeStamp += len * _cpuTimeBase;
 
     while (_sndTimeStamp < _cpuTimeStamp) {
-      //_bytes.add(0); // bitrate 8
+      // _bytes.add(0); // bitrate 8
+      _bytes.add(lvl >> 8);
       _bytes.add(lvl >> 8);
       _sndTimeStamp += _sndTimeBase;
     }
   }
 
   void _fillHeader() {
-    const int NUM_CHANNELS = 1;
+    const int NUM_CHANNELS = 2;
     const int BIT_RATE = 8;
     const int RIFF_CHUNK_SIZE_INDEX = 4;
     const int SUB_CHUNK_SIZE = 16;

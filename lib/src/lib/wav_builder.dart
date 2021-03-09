@@ -108,14 +108,14 @@ class WavBuilder {
   }
 
   void addEdge(int len) {
-    var lvl = -16384;
-    if (_currentLevel) {
-      lvl = 16384;
-    }
-    // var lvl = 0;
+    // var lvl = -16384;
     // if (_currentLevel) {
-    //   lvl = 65280;
+    //   lvl = 16384;
     // }
+    var lvl = 0;
+    if (_currentLevel) {
+      lvl = 65280;
+    }
     // var lvl = 65280;
     // if (_currentLevel) {
     //   lvl = 0;

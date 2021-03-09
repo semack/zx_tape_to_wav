@@ -15,8 +15,10 @@ class WavBuilder {
   double _sndTimeBase = 0;
   bool _currentLevel = false;
   final int _cpuFreq = 3500000;
+  final bool _amplifySignal;
 
-  WavBuilder(List<BlockBase> blocks, this._frequency, this._progress) {
+  WavBuilder(List<BlockBase> blocks, this._frequency, this._amplifySignal,
+      this._progress) {
     if (_frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $_frequency');
 
@@ -108,18 +110,16 @@ class WavBuilder {
   }
 
   void addEdge(int len) {
-    // var lvl = -16384;
-    // if (_currentLevel) {
-    //   lvl = 16384;
-    // }
-    var lvl = 0;
-    if (_currentLevel) {
-      lvl = 65280;
+    var hi = 16384;
+    var lo = -16384;
+    if (_amplifySignal) {
+      hi = 65280;
+      lo = 0;
     }
-    // var lvl = 65280;
-    // if (_currentLevel) {
-    //   lvl = 0;
-    // }
+    var lvl = lo;
+    if (_currentLevel) {
+      lvl = hi;
+    }
     appendLevel(len, lvl);
     _currentLevel = !_currentLevel;
   }
@@ -143,14 +143,14 @@ class WavBuilder {
 
     while (_sndTimeStamp < _cpuTimeStamp) {
       // _bytes.add(0); // bitrate 8
-      _bytes.add(lvl >> 8);
+      //_bytes.add(lvl >> 8);
       _bytes.add(lvl >> 8);
       _sndTimeStamp += _sndTimeBase;
     }
   }
 
   void _fillHeader() {
-    const int NUM_CHANNELS = 2;
+    const int NUM_CHANNELS = 1;
     const int BIT_RATE = 8;
     const int RIFF_CHUNK_SIZE_INDEX = 4;
     const int SUB_CHUNK_SIZE = 16;
@@ -163,6 +163,23 @@ class WavBuilder {
 
     final List<int> header = [];
     final utf8encoder = new Utf8Encoder();
+
+    // struct wavhdr { // defined by Microsoft, needs to match
+    //   char riff[4];  // should be "RIFF"
+    //   uint32_t len8; // file length - 8
+    //   char wave[4];  // should be "WAVE"
+    //   char fmt[4];   // should be "fmt "
+    //   uint32_t fdatalen; // should be 16 (0x10)
+    //   uint16_t ftag;     // format tag, 1 = pcm
+    //   uint16_t channels; // 2 for stereo
+    //   uint32_t sps;      // samples/sec
+    //   uint32_t srate;    // sample rate in bytes/sec (block align)
+    //   uint16_t chan8;    // channels * bits/sample / 8
+    //   uint16_t bps;      // bits/sample
+    //   char data[4];      // should be "data"
+    //   uint32_t datlen;   // length of data block
+    //   // pcm data follows this
+    // } hdr;
 
     header.addAll(utf8encoder.convert('RIFF'));
     header.addAll((_bytes.length - RIFF_CHUNK_SIZE_INDEX).asByteList(4));

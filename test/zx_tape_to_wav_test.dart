@@ -8,7 +8,8 @@ void main() async {
     await new File('example/assets/roms/HoH.tzx').readAsBytes().then((input) =>
         ZxTape.create(input)
             .then((tape) => tape.toWavBytes(
-                // frequency: 11025,
+                frequency: 11025,
+                amplifySignal: true,
                 progress: (percents) {
                   print(percents);
                 }))

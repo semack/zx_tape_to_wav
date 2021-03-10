@@ -15,6 +15,7 @@ abstract class BlockBase {
   void _loadData(ReadBuffer reader);
 }
 
+// tap block
 class DataBlock extends BlockBase {
   DataBlock(int index, ReadBuffer reader) : super(index, reader);
 
@@ -60,6 +61,7 @@ class DataBlock extends BlockBase {
   }
 }
 
+// 0x10:
 class StandardSpeedDataBlock extends DataBlock {
   StandardSpeedDataBlock(int index, ReadBuffer reader) : super(index, reader);
 
@@ -71,6 +73,7 @@ class StandardSpeedDataBlock extends DataBlock {
   }
 }
 
+// 0x11
 class TurboSpeedDataBlock extends DataBlock {
   TurboSpeedDataBlock(int index, ReadBuffer reader) : super(index, reader);
 
@@ -90,6 +93,41 @@ class TurboSpeedDataBlock extends DataBlock {
   }
 }
 
+// 0x12
+class PureToneBlock extends BlockBase {
+  int _pulseLen;
+  int _pulses;
+
+  int get pulseLen => _pulseLen;
+
+  int get pulses => _pulses;
+
+  PureToneBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    _pulseLen = reader.getUint16();
+    _pulses = reader.getUint16();
+  }
+}
+
+// 0x13
+class PulseSequenceBlock extends BlockBase {
+  Uint16List _pulses;
+
+  Uint16List get pulses => _pulses;
+
+  PulseSequenceBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    var length = reader.getUint8();
+    _pulses = Uint16List(length);
+    for (var i = 0; i < length; i++) _pulses[i] = reader.getUint16();
+  }
+}
+
+// 0x14
 class PureDataBlock extends DataBlock {
   PureDataBlock(int index, ReadBuffer reader) : super(index, reader);
 
@@ -111,38 +149,118 @@ class PureDataBlock extends DataBlock {
   }
 }
 
-class PureToneBlock extends BlockBase {
-  int _pulseLen;
-  int _pulses;
+// 0x20, 0x2A
+class PauseOrStopTheTapeBlock extends BlockBase {
+  int _duration;
 
-  int get pulseLen => _pulseLen;
+  int get duration => _duration;
 
-  int get pulses => _pulses;
-
-  PureToneBlock(int index, ReadBuffer reader) : super(index, reader);
+  PauseOrStopTheTapeBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
-    _pulseLen = reader.getUint16();
-    _pulses = reader.getUint16();
+    _duration = reader.getUint16();
   }
 }
 
-class PulseSequenceBlock extends BlockBase {
-  Uint16List _pulses;
+// 0x21
+class GroupStartBlock extends BlockBase {
+  String _groupName;
 
-  Uint16List get pulses => _pulses;
+  String get groupName => _groupName;
 
-  PulseSequenceBlock(int index, ReadBuffer reader) : super(index, reader);
+  GroupStartBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
     var length = reader.getUint8();
-    _pulses = Uint16List(length);
-    for (var i = 0; i < length; i++) _pulses[i] = reader.getUint16();
+    _groupName = String.fromCharCodes(reader.getUint8List(length));
   }
 }
 
+// 0x22
+class GroupEndBlock extends BlockBase {
+  @override
+  void _loadData(ReadBuffer reader) {
+    // nothing to do
+  }
+
+  GroupEndBlock(int index, ReadBuffer reader) : super(index, reader);
+}
+
+// 0x23
+class JumpToBlock extends BlockBase {
+  int _offset;
+
+  int get offset => _offset;
+
+  JumpToBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    _offset = reader.getUint16();
+  }
+}
+
+// 0x24
+class LoopStartBlock extends BlockBase {
+  int _repetitions;
+
+  int get repetitions => _repetitions;
+
+  LoopStartBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    _repetitions = reader.getUint16();
+  }
+}
+
+// 0x25
+class LoopEndBlock extends BlockBase {
+  @override
+  void _loadData(ReadBuffer reader) {
+    // nothing to do
+  }
+
+  LoopEndBlock(int index, ReadBuffer reader) : super(index, reader);
+}
+
+// 0x30
+class TextDescriptionBlock extends BlockBase {
+  String _description;
+
+  String get description => description;
+
+  TextDescriptionBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    var length = reader.getUint8();
+    _description = String.fromCharCodes(reader.getUint8List(length));
+  }
+}
+
+// 0x31
+class MessageBlock extends BlockBase {
+  int _durationSec;
+  String _message;
+
+  int get durationSec => _durationSec;
+
+  String get message => _message;
+
+  MessageBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    _durationSec = reader.getUint8();
+    var length = reader.getUint8();
+    _message = String.fromCharCodes(reader.getUint8List(length));
+  }
+}
+
+// 0x32
 class ArchiveInfoBlock extends BlockBase {
   String _description;
 
@@ -159,73 +277,7 @@ class ArchiveInfoBlock extends BlockBase {
   }
 }
 
-class GroupStartBlock extends BlockBase {
-  String _groupName;
-
-  String get groupName => _groupName;
-
-  GroupStartBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    var length = reader.getUint8();
-    _groupName = String.fromCharCodes(reader.getUint8List(length));
-  }
-}
-
-class GroupEndBlock extends BlockBase {
-  @override
-  void _loadData(ReadBuffer reader) {
-    // nothing to do
-  }
-
-  GroupEndBlock(int index, ReadBuffer reader) : super(index, reader);
-}
-
-class LoopStartBlock extends BlockBase {
-  int _repetitions;
-
-  int get repetitions => _repetitions;
-
-  LoopStartBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    _repetitions = reader.getUint16();
-  }
-}
-
-class JumpToBlock extends BlockBase {
-  int _offset;
-
-  int get offset => _offset;
-
-  JumpToBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    _offset = reader.getUint16();
-  }
-}
-
-class LoopEndBlock extends BlockBase {
-  @override
-  void _loadData(ReadBuffer reader) {
-    // nothing to do
-  }
-
-  LoopEndBlock(int index, ReadBuffer reader) : super(index, reader);
-}
-
-class GlueBlock extends BlockBase {
-  GlueBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    reader.getUint8List(9);
-  }
-}
-
+// 0x33
 class HardwareInfo {
   final int hardwareType;
   final int hardwareId;
@@ -251,51 +303,7 @@ class HardwareTypeBlock extends BlockBase {
   }
 }
 
-class PauseOrStopTheTapeBlock extends BlockBase {
-  int _duration;
-
-  int get duration => _duration;
-
-  PauseOrStopTheTapeBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    _duration = reader.getUint16();
-  }
-}
-
-class TextDescriptionBlock extends BlockBase {
-  String _description;
-
-  String get description => description;
-
-  TextDescriptionBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    var length = reader.getUint8();
-    _description = String.fromCharCodes(reader.getUint8List(length));
-  }
-}
-
-class MessageBlock extends BlockBase {
-  int _durationSec;
-  String _message;
-
-  int get durationSec => _durationSec;
-
-  String get message => _message;
-
-  MessageBlock(int index, ReadBuffer reader) : super(index, reader);
-
-  @override
-  void _loadData(ReadBuffer reader) {
-    _durationSec = reader.getUint8();
-    var length = reader.getUint8();
-    _message = String.fromCharCodes(reader.getUint8List(length));
-  }
-}
-
+// 0x35
 class CustomInfoBlock extends BlockBase {
   Uint8List _info;
 
@@ -311,5 +319,15 @@ class CustomInfoBlock extends BlockBase {
     _identification = String.fromCharCodes(reader.getUint8List(16));
     var length = reader.getUint32();
     _info = reader.getUint8List(length);
+  }
+}
+
+// 0x5A
+class GlueBlock extends BlockBase {
+  GlueBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    reader.getUint8List(9);
   }
 }

@@ -1,4 +1,7 @@
 ## 2.0.8
+* Changed defaults
+
+## 2.0.8
 * Added Stereo param
 
 ## 2.0.4

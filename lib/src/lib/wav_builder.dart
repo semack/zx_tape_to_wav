@@ -112,11 +112,11 @@ class WavBuilder {
   }
 
   void addEdge(int len) {
-    var hi = 16384;
-    var lo = -16384;
+    var hi = 0xC0;
+    var lo = 0x40;
     if (_amplifySignal) {
-      hi = 65280;
-      lo = 0;
+      hi = 0xFF;
+      lo = 0x00;
     }
     var lvl = lo;
     if (_currentLevel) {
@@ -142,9 +142,8 @@ class WavBuilder {
 
   void appendLevel(int len, int lvl) {
     _cpuTimeStamp += len * _cpuTimeBase;
-
     while (_sndTimeStamp < _cpuTimeStamp) {
-      _bytes.add(lvl >> 8);
+      _bytes.add(lvl);
       _sndTimeStamp += _sndTimeBase;
     }
   }

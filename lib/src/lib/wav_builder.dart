@@ -17,8 +17,10 @@ class WavBuilder {
   final int _cpuFreq = 3500000;
   final bool _amplifySignal;
 
-  WavBuilder(List<BlockBase> blocks, this._frequency, this._amplifySignal,
-      this._progress) {
+  final bool _stereo;
+
+  WavBuilder(List<BlockBase> blocks, this._frequency, this._stereo,
+      this._amplifySignal, this._progress) {
     if (_frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $_frequency');
 
@@ -143,6 +145,7 @@ class WavBuilder {
   void appendLevel(int len, int lvl) {
     _cpuTimeStamp += len * _cpuTimeBase;
     while (_sndTimeStamp < _cpuTimeStamp) {
+      if (_stereo) _bytes.add(lvl);
       _bytes.add(lvl);
       _sndTimeStamp += _sndTimeBase;
     }
@@ -165,7 +168,7 @@ class WavBuilder {
     //   uint16_t ftag;     // format tag, 1 = pcm
     header.addAll(1.asByteList(2));
     //   uint16_t channels; // 2 for stereo
-    header.addAll(1.asByteList(2));
+    header.addAll(_stereo ? 2.asByteList(2) : 1.asByteList(2));
     //   uint32_t sps;      // samples/sec
     header.addAll(_frequency.asByteList(4));
     //   uint32_t srate;    // sample rate in bytes/sec (block align)

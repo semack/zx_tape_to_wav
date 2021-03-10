@@ -117,7 +117,7 @@ class ZxTape {
             return new GlueBlock(index, _reader);
           default:
             throw new ArgumentError(
-                'Unexpected type $blockType of block #$index');
+                'Unexpected type 0x${blockType.toRadixString(16)} of block #$index');
         }
         break;
       default:

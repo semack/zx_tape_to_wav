@@ -1,4 +1,7 @@
-## 2.0.1
+## 2.0.4
+* Added CustomInfo block
+
+## 2.0.2
 * Added amplifying the signal
 
 ## 2.0.1

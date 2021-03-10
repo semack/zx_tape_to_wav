@@ -111,6 +111,8 @@ class ZxTape {
             return new ArchiveInfoBlock(index, _reader);
           case 0x33:
             return new HardwareTypeBlock(index, _reader);
+          case 0x35:
+            return new CustomInfoBlock(index, _reader);
           case 0x5A:
             return new GlueBlock(index, _reader);
           default:

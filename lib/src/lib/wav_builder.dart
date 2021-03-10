@@ -30,14 +30,17 @@ class WavBuilder {
   }
 
   Uint8List toBytes() {
-    LoopStartBlock loopStartBlock;
+    int loopRepetitions;
+    int loopIndex;
     for (var i = 0; i < _blocks.length; i++) {
       var block = _blocks[i];
-      if (block is LoopStartBlock)
-        loopStartBlock = block;
+      if (block is LoopStartBlock) {
+        loopIndex = block.index;
+        loopRepetitions = block.repetitions;
+      }
       else if (block is LoopEndBlock) {
-        loopStartBlock.repetitions--;
-        if (loopStartBlock.repetitions > 0) i = loopStartBlock.index;
+        loopRepetitions--;
+        if (loopRepetitions > 0) i = loopIndex;
       } else if (block is JumpToBlock)
         i += block.offset;
       else {

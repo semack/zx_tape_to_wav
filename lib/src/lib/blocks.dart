@@ -112,33 +112,37 @@ class PureDataBlock extends DataBlock {
 }
 
 class PureToneBlock extends BlockBase {
-  int pulseLen;
-  int pulses;
+  int _pulseLen;
+  int _pulses;
+  int get pulseLen => _pulseLen;
+  int get pulses => _pulses;
 
   PureToneBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
-    pulseLen = reader.getUint16();
-    pulses = reader.getUint16();
+    _pulseLen = reader.getUint16();
+    _pulses = reader.getUint16();
   }
 }
 
 class PulseSequenceBlock extends BlockBase {
-  Uint16List pulses;
+  Uint16List _pulses;
+  Uint16List get pulses => _pulses;
 
   PulseSequenceBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
     var length = reader.getUint8();
-    pulses = Uint16List(length);
-    for (var i = 0; i < length; i++) pulses[i] = reader.getUint16();
+    _pulses = Uint16List(length);
+    for (var i = 0; i < length; i++) _pulses[i] = reader.getUint16();
   }
 }
 
 class ArchiveInfoBlock extends BlockBase {
-  String description;
+  String _description;
+  String get description => _description;
 
   ArchiveInfoBlock(int index, ReadBuffer reader) : super(index, reader);
 
@@ -146,20 +150,20 @@ class ArchiveInfoBlock extends BlockBase {
   void _loadData(ReadBuffer reader) {
     {
       var length = reader.getUint16();
-      description = String.fromCharCodes(reader.getUint8List(length));
+      _description = String.fromCharCodes(reader.getUint8List(length));
     }
   }
 }
 
 class GroupStartBlock extends BlockBase {
-  String groupName;
-
+  String _groupName;
+  String get groupName => _groupName;
   GroupStartBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
     var length = reader.getUint8();
-    groupName = String.fromCharCodes(reader.getUint8List(length));
+    _groupName = String.fromCharCodes(reader.getUint8List(length));
   }
 }
 
@@ -173,24 +177,25 @@ class GroupEndBlock extends BlockBase {
 }
 
 class LoopStartBlock extends BlockBase {
-  int repetitions;
+  int _repetitions;
+  int get repetitions => _repetitions;
 
   LoopStartBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
-    repetitions = reader.getUint16();
+    _repetitions = reader.getUint16();
   }
 }
 
 class JumpToBlock extends BlockBase {
-  int offset;
-
+  int _offset;
+  int get offset => _offset;
   JumpToBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
-    offset = reader.getUint16();
+    _offset = reader.getUint16();
   }
 }
 
@@ -238,38 +243,61 @@ class HardwareTypeBlock extends BlockBase {
 }
 
 class PauseOrStopTheTapeBlock extends BlockBase {
-  int duration;
+  int _duration;
+  int get duration => _duration;
 
   PauseOrStopTheTapeBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
-    duration = reader.getUint16();
+    _duration = reader.getUint16();
   }
 }
 
 class TextDescriptionBlock extends BlockBase {
-  String description;
-
+  String _description;
+  String get description => description;
   TextDescriptionBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
     var length = reader.getUint8();
-    description = String.fromCharCodes(reader.getUint8List(length));
+    _description = String.fromCharCodes(reader.getUint8List(length));
   }
 }
 
 class MessageBlock extends BlockBase {
-  int durationSec;
-  String message;
+  int _durationSec;
+  String _message;
+
+  int get durationSec => _durationSec;
+
+  String get message => _message;
 
   MessageBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
   void _loadData(ReadBuffer reader) {
-    durationSec = reader.getUint8();
+    _durationSec = reader.getUint8();
     var length = reader.getUint8();
-    message = String.fromCharCodes(reader.getUint8List(length));
+    _message = String.fromCharCodes(reader.getUint8List(length));
+  }
+}
+
+class CustomInfoBlock extends BlockBase {
+  Uint8List _info;
+
+  Uint8List get info => _info;
+  String _identification;
+
+  String get identification => _identification;
+
+  CustomInfoBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    _identification = String.fromCharCodes(reader.getUint8List(10));
+    var length = reader.getUint16();
+    _info = reader.getUint8List(length);
   }
 }

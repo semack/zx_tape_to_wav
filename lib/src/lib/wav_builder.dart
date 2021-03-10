@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'blocks.dart';
@@ -37,8 +38,7 @@ class WavBuilder {
       if (block is LoopStartBlock) {
         loopIndex = block.index;
         loopRepetitions = block.repetitions;
-      }
-      else if (block is LoopEndBlock) {
+      } else if (block is LoopEndBlock) {
         loopRepetitions--;
         if (loopRepetitions > 0) i = loopIndex;
       } else if (block is JumpToBlock)
@@ -115,10 +115,10 @@ class WavBuilder {
   void addEdge(int len) {
     var hi = 16384;
     var lo = -16384;
-    if (_amplifySignal) {
-      hi = 65280;
-      lo = -65280;
-    }
+    // if (_amplifySignal) {
+    //   hi = 65534;
+    //   lo = -65534;
+    // }
     var lvl = lo;
     if (_currentLevel) {
       lvl = hi;

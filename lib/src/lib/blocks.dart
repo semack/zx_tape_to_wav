@@ -114,7 +114,9 @@ class PureDataBlock extends DataBlock {
 class PureToneBlock extends BlockBase {
   int _pulseLen;
   int _pulses;
+
   int get pulseLen => _pulseLen;
+
   int get pulses => _pulses;
 
   PureToneBlock(int index, ReadBuffer reader) : super(index, reader);
@@ -128,6 +130,7 @@ class PureToneBlock extends BlockBase {
 
 class PulseSequenceBlock extends BlockBase {
   Uint16List _pulses;
+
   Uint16List get pulses => _pulses;
 
   PulseSequenceBlock(int index, ReadBuffer reader) : super(index, reader);
@@ -142,6 +145,7 @@ class PulseSequenceBlock extends BlockBase {
 
 class ArchiveInfoBlock extends BlockBase {
   String _description;
+
   String get description => _description;
 
   ArchiveInfoBlock(int index, ReadBuffer reader) : super(index, reader);
@@ -157,7 +161,9 @@ class ArchiveInfoBlock extends BlockBase {
 
 class GroupStartBlock extends BlockBase {
   String _groupName;
+
   String get groupName => _groupName;
+
   GroupStartBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
@@ -178,6 +184,7 @@ class GroupEndBlock extends BlockBase {
 
 class LoopStartBlock extends BlockBase {
   int _repetitions;
+
   int get repetitions => _repetitions;
 
   LoopStartBlock(int index, ReadBuffer reader) : super(index, reader);
@@ -190,7 +197,9 @@ class LoopStartBlock extends BlockBase {
 
 class JumpToBlock extends BlockBase {
   int _offset;
+
   int get offset => _offset;
+
   JumpToBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
@@ -244,6 +253,7 @@ class HardwareTypeBlock extends BlockBase {
 
 class PauseOrStopTheTapeBlock extends BlockBase {
   int _duration;
+
   int get duration => _duration;
 
   PauseOrStopTheTapeBlock(int index, ReadBuffer reader) : super(index, reader);
@@ -256,7 +266,9 @@ class PauseOrStopTheTapeBlock extends BlockBase {
 
 class TextDescriptionBlock extends BlockBase {
   String _description;
+
   String get description => description;
+
   TextDescriptionBlock(int index, ReadBuffer reader) : super(index, reader);
 
   @override
@@ -296,8 +308,8 @@ class CustomInfoBlock extends BlockBase {
 
   @override
   void _loadData(ReadBuffer reader) {
-    _identification = String.fromCharCodes(reader.getUint8List(10));
-    var length = reader.getUint16();
+    _identification = String.fromCharCodes(reader.getUint8List(16));
+    var length = reader.getUint32();
     _info = reader.getUint8List(length);
   }
 }

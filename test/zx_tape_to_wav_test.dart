@@ -8,8 +8,8 @@ void main() async {
     await new File('example/assets/roms/RENEGATE.tzx').readAsBytes().then(
         (input) => ZxTape.create(input)
             .then((tape) => tape.toWavBytes(
-                frequency: 22050,
-                amplifySignal: true,
+                frequency: 44100,
+                amplifySignal: false,
                 progress: (percents) {
                   print(percents);
                 }))
@@ -21,7 +21,7 @@ void main() async {
         (input) => ZxTape.create(input)
             .then((tape) => tape.toWavBytes(
                 frequency: 44100,
-                amplifySignal: false,
+                amplifySignal: true,
                 progress: (percents) {
                   print(percents);
                 }))

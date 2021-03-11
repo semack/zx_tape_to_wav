@@ -226,6 +226,34 @@ class LoopEndBlock extends BlockBase {
   LoopEndBlock(int index, ReadBuffer reader) : super(index, reader);
 }
 
+// 0x28
+class SelectInfo {
+  final int offset;
+  final String description;
+
+  SelectInfo(this.offset, this.description);
+}
+
+class SelectBlock extends BlockBase{
+  Iterable<SelectInfo> get selectInfo => _selectInfo;
+  List<SelectInfo> _selectInfo = [];
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    var length = reader.getUint16(); // skip length
+    var count = length = reader.getUint8();
+    for (int i = 0; i < count; i++) {
+      var offset = reader.getUint16();
+      var len = reader.getUint8();
+      var description = String.fromCharCodes(reader.getUint8List(len));
+      var info = new SelectInfo(offset, description);
+      _selectInfo.add(info);
+    }
+  }
+
+  SelectBlock(int index, ReadBuffer reader) : super(index, reader);
+}
+
 // 0x30
 class TextDescriptionBlock extends BlockBase {
   String _description;

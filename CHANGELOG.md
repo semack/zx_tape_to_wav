@@ -1,3 +1,6 @@
+## 2.0.10
+* Added SelectBlock
+
 ## 2.0.8
 * Changed defaults
 

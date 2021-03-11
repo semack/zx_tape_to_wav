@@ -1,33 +1,33 @@
 import 'dart:io';
 
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:zx_tape_to_wav/zx_tape_to_wav.dart';
 
 void main() async {
   test('test tzx conversion', () async {
-    await new File('example/assets/roms/RENEGATE.tzx').readAsBytes().then(
-        (input) => ZxTape.create(input)
-            .then((tape) => tape.toWavBytes(
-                frequency: 22050,
-                stereo: true,
-                amplifySignal: true,
-                progress: (percents) {
-                  print(percents);
-                }))
-            .then((output) => new File('example/assets/out/RENEGATE-tzx.wav')
-                .writeAsBytes(output)));
-  });
-  test('test tap conversion', () async {
-    await new File('example/assets/roms/RENEGATE.tap').readAsBytes().then(
+    await new File('example/assets/roms/test.tzx').readAsBytes().then(
         (input) => ZxTape.create(input)
             .then((tape) => tape.toWavBytes(
                 frequency: 44100,
-                stereo: false,
+                bitsPerSample: 8,
                 amplifySignal: false,
                 progress: (percents) {
-                  print(percents);
+                  print('progress => $percents');
                 }))
-            .then((output) => new File('example/assets/out/RENEGATE-tap.wav')
+            .then((output) => new File('example/assets/out/tzx.wav')
+                .writeAsBytes(output)));
+  });
+  test('test tap conversion', () async {
+    await new File('example/assets/roms/test.tap').readAsBytes().then(
+        (input) => ZxTape.create(input)
+            .then((tape) => tape.toWavBytes(
+                frequency: 44100,
+                bitsPerSample: 8,
+                amplifySignal: false,
+                progress: (percents) {
+                  print('progress => $percents');
+                }))
+            .then((output) => new File('example/assets/out/tap.wav')
                 .writeAsBytes(output)));
   });
 }

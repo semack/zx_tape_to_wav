@@ -48,11 +48,11 @@ class ZxTape {
   /// Returns WAV content as array of bytes.
   Future<Uint8List> toWavBytes(
       {int frequency = 44100,
-      bool stereo = false,
-      bool amplifySignal = true,
+      int bitsPerSample = 8,
+      bool amplifySignal = false,
       Function(double percents) progress}) async {
     var builder =
-        WavBuilder(blocks, frequency, stereo, amplifySignal, progress);
+        WavBuilder(blocks, frequency, bitsPerSample, amplifySignal, progress);
     return builder.toBytes();
   }
 
@@ -105,6 +105,8 @@ class ZxTape {
             return new LoopStartBlock(index, _reader);
           case 0x25:
             return new LoopEndBlock(index, _reader);
+          case 0x28:
+            return new SelectBlock(index, _reader);
           case 0x30:
             return new TextDescriptionBlock(index, _reader);
           case 0x31:

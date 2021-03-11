@@ -234,7 +234,7 @@ class SelectInfo {
   SelectInfo(this.offset, this.description);
 }
 
-class SelectBlock extends BlockBase{
+class SelectBlock extends BlockBase {
   Iterable<SelectInfo> get selectInfo => _selectInfo;
   List<SelectInfo> _selectInfo = [];
 

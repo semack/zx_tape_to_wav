@@ -14,11 +14,11 @@ class WavBuilder {
   final int _cpuFreq = 3500000;
   final List<BlockBase> blocks;
   final int frequency;
-  final int bitsPerSample;
+  final int bits;
   final bool amplifySignal;
   final Function(double percents) progress;
 
-  WavBuilder(this.blocks, this.frequency, this.bitsPerSample,
+  WavBuilder(this.blocks, this.frequency, this.bits,
       this.amplifySignal, this.progress) {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
@@ -49,7 +49,7 @@ class WavBuilder {
         }
       }
     }
-    _fillHeader(_bytes, frequency, bitsPerSample);
+    _fillHeader(_bytes, frequency, bits);
     return Uint8List.fromList(_bytes);
   }
 
@@ -120,7 +120,7 @@ class WavBuilder {
     // }
     _cpuTimeStamp += len * _cpuTimeBase;
     while (_sndTimeStamp <= _cpuTimeStamp) {
-      for (var i = 0; i < bitsPerSample ~/ 8; i++) {
+      for (var i = 0; i < bits ~/ 8; i++) {
         _bytes.add(lvl >> 8);
       }
       _sndTimeStamp += _sndTimeBase;

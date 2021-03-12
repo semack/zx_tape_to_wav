@@ -7,7 +7,6 @@ void main() async {
       ZxTape.create(input)
           .then((tape) => tape.toWavBytes(
               frequency: 44100,
-              bits: 8,
               amplifySignal: false,
               progress: (percents) {
                 print('progress => $percents');

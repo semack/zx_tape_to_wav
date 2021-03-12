@@ -1,3 +1,6 @@
+## 2.0.11
+* Added equalizing
+
 ## 2.0.10
 * Added SelectBlock
 

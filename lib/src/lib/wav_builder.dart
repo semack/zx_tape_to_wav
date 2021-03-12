@@ -22,8 +22,9 @@ class WavBuilder {
   final int channels = 1;
   final int audioFormat = 1; //pcm
   final Function(double percents) progress;
+  final bool amplifySignal;
 
-  WavBuilder(this.blocks, this.frequency, this.progress) {
+  WavBuilder(this.blocks, this.frequency, this.amplifySignal, this.progress) {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
     var timeBase = _getLCM(frequency, _cpuFreq);
@@ -162,9 +163,11 @@ class WavBuilder {
   }
 
   void _addEdge(int len) {
-    var lvl = -127;
+    var hi = amplifySignal ? 127 : 63;
+    var lo = -hi;
+    var lvl = lo;
     if (_currentLevel) {
-      lvl = 127;
+      lvl = hi;
     }
     _appendLevel(len, lvl);
     _currentLevel = !_currentLevel;

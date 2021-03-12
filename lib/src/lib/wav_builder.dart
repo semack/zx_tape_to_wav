@@ -19,6 +19,8 @@ class WavBuilder {
   final List<BlockBase> blocks;
   final int frequency;
   final int bits = 8;
+  final int channels = 1;
+  final int audioFormat = 1; //pcm
   final Function(double percents) progress;
 
   WavBuilder(this.blocks, this.frequency, this.progress) {
@@ -52,7 +54,7 @@ class WavBuilder {
         }
       }
     }
-    _fillHeader(_bytes, frequency);
+    _fillHeader(_bytes, frequency, bits, channels, audioFormat);
     return Uint8List.fromList(_bytes);
   }
 
@@ -153,16 +155,16 @@ class WavBuilder {
     }
     // Emit sustain
     while (_sndTimeStamp <= _cpuTimeStamp) {
-      _bytes.add(lvl);
+      _bytes.add(lvl + 128);
       _sndTimeStamp += _sndTimeBase;
     }
     _currentVol = lvl;
   }
 
   void _addEdge(int len) {
-    var lvl = -63;
+    var lvl = -127;
     if (_currentLevel) {
-      lvl = 63;
+      lvl = 127;
     }
     _appendLevel(len, lvl);
     _currentLevel = !_currentLevel;
@@ -182,8 +184,8 @@ class WavBuilder {
     _currentLevel = false;
   }
 
-  void _fillHeader(List<int> bytes, int frequency,
-      {int bitsPerSample = 8, int channels = 1, int audioFormat = 1}) {
+  void _fillHeader(List<int> bytes, int frequency, int bitsPerSample,
+      int channels, int audioFormat) {
     final List<int> header = [];
     final utf8encoder = new Utf8Encoder();
 

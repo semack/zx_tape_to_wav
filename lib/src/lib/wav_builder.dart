@@ -115,8 +115,6 @@ class WavBuilder {
     }
   }
 
-  int zz = 0;
-
   void _appendLevel(int len, int lvl) {
     _cpuTimeStamp += len * _cpuTimeBase;
     // Emit rise or fall
@@ -142,20 +140,15 @@ class WavBuilder {
 
         for (var i = 0; i < actualRiseSamples; i++) {
           var v = ((-cos(phase) + 1) / 2 * amp + _currentVol).round();
-          if (zz < 20)
-            print('lvl : $lvl, v:$v');
           _bytes.add(v);
           phase += phaseStep;
           _sndTimeStamp += _sndTimeBase;
         }
-        if (zz < 20)
-        print('---------------');
-        zz ++;
       }
     }
     // Emit sustain
     while (_sndTimeStamp <= _cpuTimeStamp) {
-      _bytes.add(lvl >> 8);
+      _bytes.add(lvl);
       _sndTimeStamp += _sndTimeBase;
     }
     _currentVol = lvl;

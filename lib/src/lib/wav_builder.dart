@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
-
 import 'blocks.dart';
 import 'extensions.dart';
 
@@ -23,8 +21,7 @@ class WavBuilder {
   final int bits = 8;
   final Function(double percents) progress;
 
-  WavBuilder(this.blocks, this.frequency,
-      this.progress) {
+  WavBuilder(this.blocks, this.frequency, this.progress) {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
     var timeBase = _getLCM(frequency, _cpuFreq);
@@ -33,7 +30,7 @@ class WavBuilder {
     _maxRiseSamples = (0.00015 * frequency).round();
   }
 
-   Uint8List toBytes() {
+  Uint8List toBytes() {
     int loopRepetitions;
     int loopIndex;
     for (var i = 0; i < blocks.length; i++) {
@@ -136,13 +133,11 @@ class WavBuilder {
 
       _lastRiseSamples = riseSamples;
 
-
-      if (i <1)
-        {
-          print(cos(0));
-          print(cos(pi));
-          i++;
-        }
+      if (i < 1) {
+        print(cos(0));
+        print(cos(pi));
+        i++;
+      }
       if (actualRiseSamples > 0) {
         var phase = 0.0;
         var phaseStep = (pi / actualRiseSamples).toDouble();
@@ -150,7 +145,7 @@ class WavBuilder {
 
         for (var i = 0; i < actualRiseSamples; i++) {
           var v = ((-cos(phase) + 1) / 2 * amp + _currentVol).round();
-          _bytes.add(v+128);
+          _bytes.add(v + 128);
           phase += phaseStep;
           _sndTimeStamp += _sndTimeBase;
         }
@@ -188,7 +183,7 @@ class WavBuilder {
   }
 
   void _fillHeader(List<int> bytes, int frequency,
-      {int bitsPerSample =8 , int channels = 1, int audioFormat = 1}) {
+      {int bitsPerSample = 8, int channels = 1, int audioFormat = 1}) {
     final List<int> header = [];
     final utf8encoder = new Utf8Encoder();
 

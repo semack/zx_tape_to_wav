@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
+
 import 'blocks.dart';
 import 'extensions.dart';
 
@@ -18,11 +20,10 @@ class WavBuilder {
   final int _cpuFreq = 3500000;
   final List<BlockBase> blocks;
   final int frequency;
-  final int bits;
-  final bool amplifySignal;
+  final int bits = 8;
   final Function(double percents) progress;
 
-  WavBuilder(this.blocks, this.frequency, this.bits, this.amplifySignal,
+  WavBuilder(this.blocks, this.frequency,
       this.progress) {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
@@ -32,7 +33,7 @@ class WavBuilder {
     _maxRiseSamples = (0.00015 * frequency).round();
   }
 
-  Int8List toBytes() {
+   Uint8List toBytes() {
     int loopRepetitions;
     int loopIndex;
     for (var i = 0; i < blocks.length; i++) {
@@ -54,8 +55,8 @@ class WavBuilder {
         }
       }
     }
-    _fillHeader(_bytes, frequency, bits);
-    return Int8List.fromList(_bytes);
+    _fillHeader(_bytes, frequency);
+    return Uint8List.fromList(_bytes);
   }
 
   void _addBlockSoundData(BlockBase block) {
@@ -115,6 +116,8 @@ class WavBuilder {
     }
   }
 
+  var i = 0;
+
   void _appendLevel(int len, int lvl) {
     _cpuTimeStamp += len * _cpuTimeBase;
     // Emit rise or fall
@@ -133,6 +136,13 @@ class WavBuilder {
 
       _lastRiseSamples = riseSamples;
 
+
+      if (i <1)
+        {
+          print(cos(0));
+          print(cos(pi));
+          i++;
+        }
       if (actualRiseSamples > 0) {
         var phase = 0.0;
         var phaseStep = (pi / actualRiseSamples).toDouble();
@@ -140,7 +150,7 @@ class WavBuilder {
 
         for (var i = 0; i < actualRiseSamples; i++) {
           var v = ((-cos(phase) + 1) / 2 * amp + _currentVol).round();
-          _bytes.add(v);
+          _bytes.add(v+128);
           phase += phaseStep;
           _sndTimeStamp += _sndTimeBase;
         }
@@ -177,8 +187,8 @@ class WavBuilder {
     _currentLevel = false;
   }
 
-  void _fillHeader(List<int> bytes, int frequency, int bitsPerSample,
-      {int channels = 1, int audioFormat = 1}) {
+  void _fillHeader(List<int> bytes, int frequency,
+      {int bitsPerSample =8 , int channels = 1, int audioFormat = 1}) {
     final List<int> header = [];
     final utf8encoder = new Utf8Encoder();
 

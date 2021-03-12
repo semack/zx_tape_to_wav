@@ -46,13 +46,13 @@ class ZxTape {
   }
 
   /// Returns WAV content as array of bytes.
-  Future<Int8List> toWavBytes(
+  Future<Uint8List> toWavBytes(
       {int frequency = 44100,
       int bits = 8,
       bool amplifySignal = false,
       Function(double percents) progress}) async {
     var builder =
-        WavBuilder(blocks, frequency, bits, amplifySignal, progress);
+        WavBuilder(blocks, frequency, progress);
     return builder.toBytes();
   }
 

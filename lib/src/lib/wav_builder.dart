@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'blocks.dart';
@@ -10,6 +11,9 @@ class WavBuilder {
   double _sndTimeStamp = 0;
   double _cpuTimeBase = 0;
   double _sndTimeBase = 0;
+  int _currentVol = 0;
+  int _maxRiseSamples = 0;
+  int _lastRiseSamples = 0;
   bool _currentLevel = false;
   final int _cpuFreq = 3500000;
   final List<BlockBase> blocks;
@@ -18,16 +22,17 @@ class WavBuilder {
   final bool amplifySignal;
   final Function(double percents) progress;
 
-  WavBuilder(this.blocks, this.frequency, this.bits,
-      this.amplifySignal, this.progress) {
+  WavBuilder(this.blocks, this.frequency, this.bits, this.amplifySignal,
+      this.progress) {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
     var timeBase = _getLCM(frequency, _cpuFreq);
     _cpuTimeBase = timeBase / _cpuFreq;
     _sndTimeBase = timeBase / frequency;
+    _maxRiseSamples = (0.00015 * frequency).round();
   }
 
-  Uint8List toBytes() {
+  Int8List toBytes() {
     int loopRepetitions;
     int loopIndex;
     for (var i = 0; i < blocks.length; i++) {
@@ -50,7 +55,7 @@ class WavBuilder {
       }
     }
     _fillHeader(_bytes, frequency, bits);
-    return Uint8List.fromList(_bytes);
+    return Int8List.fromList(_bytes);
   }
 
   void _addBlockSoundData(BlockBase block) {
@@ -110,33 +115,56 @@ class WavBuilder {
     }
   }
 
-  void _appendLevel(int len, int lvl, {int db = -45}) {
-    // double multiplier = pow(10, db / 20);
-    // lvl = (lvl * multiplier).round();
-    // if (lvl > 32768) {
-    //   lvl = 32768;
-    // } else if (lvl < -32768) {
-    //   lvl = -32768;
-    // }
+  int zz = 0;
+
+  void _appendLevel(int len, int lvl) {
     _cpuTimeStamp += len * _cpuTimeBase;
-    while (_sndTimeStamp <= _cpuTimeStamp) {
-      for (var i = 0; i < bits ~/ 8; i++) {
-        _bytes.add(lvl >> 8);
+    // Emit rise or fall
+    if (_currentVol != lvl) {
+      var riseSamples =
+          (((_cpuTimeStamp - _sndTimeStamp) / _sndTimeBase) / 2).round();
+
+      if (riseSamples > _maxRiseSamples) {
+        riseSamples = _maxRiseSamples;
       }
+
+      var actualRiseSamples = riseSamples;
+      if (actualRiseSamples > _lastRiseSamples) {
+        actualRiseSamples = _lastRiseSamples;
+      }
+
+      _lastRiseSamples = riseSamples;
+
+      if (actualRiseSamples > 0) {
+        var phase = 0.0;
+        var phaseStep = (pi / actualRiseSamples).toDouble();
+        var amp = (lvl - _currentVol).toDouble();
+
+        for (var i = 0; i < actualRiseSamples; i++) {
+          var v = ((-cos(phase) + 1) / 2 * amp + _currentVol).round();
+          if (zz < 20)
+            print('lvl : $lvl, v:$v');
+          _bytes.add(v);
+          phase += phaseStep;
+          _sndTimeStamp += _sndTimeBase;
+        }
+        if (zz < 20)
+        print('---------------');
+        zz ++;
+      }
+    }
+    // Emit sustain
+    while (_sndTimeStamp <= _cpuTimeStamp) {
+      _bytes.add(lvl >> 8);
       _sndTimeStamp += _sndTimeBase;
     }
+    _currentVol = lvl;
   }
 
   void _addEdge(int len) {
-    var hi = 16384;
-    var lo = -16384;
-    if (amplifySignal) {
-      hi = 32768;
-      lo = -32768;
-    }
-    var lvl = lo;
+    var lvl = -63;
     if (_currentLevel) {
-      lvl = hi;
+      lvl = 63;
     }
     _appendLevel(len, lvl);
     _currentLevel = !_currentLevel;

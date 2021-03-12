@@ -46,7 +46,7 @@ class ZxTape {
   }
 
   /// Returns WAV content as array of bytes.
-  Future<Uint8List> toWavBytes(
+  Future<Int8List> toWavBytes(
       {int frequency = 44100,
       int bits = 8,
       bool amplifySignal = false,

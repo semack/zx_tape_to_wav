@@ -17,6 +17,7 @@ void main() async {
             .then((output) => new File('example/assets/out/tzx.wav')
                 .writeAsBytes(output)));
   });
+  return;
   test('test tap conversion', () async {
     await new File('example/assets/roms/test.tap').readAsBytes().then(
         (input) => ZxTape.create(input)

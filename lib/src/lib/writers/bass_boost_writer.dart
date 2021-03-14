@@ -26,79 +26,77 @@ class BassBoostWriter extends BinaryWriter {
 
   @override
   void writeSample(int sample) {
-    {
-      if (sample == 0) {
-        sample = -32767;
-      }
+    if (sample == 0) {
+      sample = -32767;
+    }
 
-      if (_first) {
-        _first = false;
-        super.writeSample(sample);
-        _previous = sample;
-        return;
-      }
-
-      _pulseLen += 1;
-
-      var delta = sample - _previous;
-
-      var isRise = delta > 17000;
-      var isFall = delta < -17000;
-
-      var wp = _previous;
+    if (_first) {
+      _first = false;
+      super.writeSample(sample);
       _previous = sample;
+      return;
+    }
 
-      if (isRise) {
-        if (_pulseLen > _samplesThreshold4) {
-          // 32
-          _last = wp;
-        } else if (_pulseLen > _samplesThreshold3) {
-          // 16
-          _last = (wp + (delta / 2)).round();
-        } else {
-          _last = 0;
-        }
+    _pulseLen += 1;
 
-        if (_pulseLen < _samplesThreshold1) {
-          // 8
-          _step = (delta / 8).round();
-        } else {
-          _step = (delta / 12).round();
-        }
-        super.writeSample(sample);
-        _pulseLen = 0;
-        return;
-      }
+    var delta = sample - _previous;
 
-      if (isFall && _pulseLen > _samplesThreshold2) {
-        // 10
+    var isRise = delta > 17000;
+    var isFall = delta < -17000;
+
+    var wp = _previous;
+    _previous = sample;
+
+    if (isRise) {
+      if (_pulseLen > _samplesThreshold4) {
+        // 32
+        _last = wp;
+      } else if (_pulseLen > _samplesThreshold3) {
+        // 16
+        _last = (wp + (delta / 2)).round();
+      } else {
         _last = 0;
+      }
+
+      if (_pulseLen < _samplesThreshold1) {
+        // 8
+        _step = (delta / 8).round();
+      } else {
         _step = (delta / 12).round();
-        super.writeSample(sample);
-        _pulseLen = 0;
-        return;
-      }
-
-      if (isFall) {
-        _pulseLen = 0;
-      }
-
-      if (_step != 0) {
-        _last += _step;
-
-        if (_step > 0 && _last > sample) {
-          _last = sample;
-          _step = 0;
-        }
-
-        if (_step < 0 && _last < sample) {
-          _last = sample;
-          _step = 0;
-        }
-        super.writeSample(sample);
-        return;
       }
       super.writeSample(sample);
+      _pulseLen = 0;
+      return;
     }
+
+    if (isFall && _pulseLen > _samplesThreshold2) {
+      // 10
+      _last = 0;
+      _step = (delta / 12).round();
+      super.writeSample(sample);
+      _pulseLen = 0;
+      return;
+    }
+
+    if (isFall) {
+      _pulseLen = 0;
+    }
+
+    if (_step != 0) {
+      _last += _step;
+
+      if (_step > 0 && _last > sample) {
+        _last = sample;
+        _step = 0;
+      }
+
+      if (_step < 0 && _last < sample) {
+        _last = sample;
+        _step = 0;
+      }
+      super.writeSample(sample);
+      return;
+    }
+    super.writeSample(sample);
   }
 }

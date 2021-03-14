@@ -155,11 +155,14 @@ class PauseOrStopTheTapeBlock extends BlockBase {
 
   int get duration => _duration;
 
-  PauseOrStopTheTapeBlock(int index, ReadBuffer reader) : super(index, reader);
+  PauseOrStopTheTapeBlock(int index, ReadBuffer reader, {int duration = 2000}) : super(index, reader){
+    _duration = duration;
+  }
 
   @override
   void _loadData(ReadBuffer reader) {
-    _duration = reader.getUint16();
+    if (reader != null)
+      _duration = reader.getUint16();
   }
 }
 

@@ -43,6 +43,7 @@ class ZxTape {
       _blocks.add(block);
       index++;
     }
+    _blocks.add(PauseOrStopTheTapeBlock(index, null));
   }
 
   /// Returns WAV content as array of bytes.

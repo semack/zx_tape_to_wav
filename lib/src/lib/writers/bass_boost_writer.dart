@@ -1,101 +1,57 @@
+import 'dart:math';
+
 import 'package:zx_tape_to_wav/src/lib/writers/binary_writer.dart';
 
 class BassBoostWriter extends BinaryWriter {
   final int frequency;
-  bool _first = true;
-  int _previous = 0;
-  int _last = 0;
-  int _step = 0;
-  int _pulseLen = 0;
-  int _samplesThreshold1;
-  int _samplesThreshold2;
-  int _samplesThreshold3;
-  int _samplesThreshold4;
+  var _xn1 = 0.0;
+  var _xn2 = 0.0;
+  var _yn1 = 0.0;
+  var _yn2 = 0.0;
+  double _a0 = 0.0;
+  double _a1 = 0.0;
+  double _a2 = 0.0;
+  double _b0 = 0.0;
+  double _b1 = 0.0;
+  double _b2 = 0.0;
 
   BassBoostWriter(this.frequency) {
-    _samplesThreshold1 =
-        (185.0E-6 * frequency).round(); // 185 mkSec, 8 @ 44.1kHz
-    _samplesThreshold2 =
-        (230.0E-6 * frequency).round(); // 230 mkSec, 10 @ 44.1kHz
-    _samplesThreshold3 =
-        (365.0E-6 * frequency).round(); // 365 mkSec, 16 @ 44.1kHz
-    _samplesThreshold4 =
-        (730.0E-6 * frequency).round(); // 730 mkSec, 32 @ 44.1kHz
+    var bass = 20.0; // Bass gain (dB)
+
+    // Pre init (like Audacity)
+    var slope = 0.4;
+    var hzBass = 250.0;
+
+    // Calculate coefficients
+    var ww = 2.0 * pi * hzBass / 8;
+    var a = exp(log(10.0) * bass / 40);
+    var b = sqrt((a * a + 1) / slope - (pow(a - 1, 2)));
+
+    _b0 = a * ((a + 1) - (a - 1) * cos(ww) + b * sin(ww));
+    _b1 = 2 * a * ((a - 1) - (a + 1) * cos(ww));
+    _b2 = a * ((a + 1) - (a - 1) * cos(ww) - b * sin(ww));
+    _a0 = (a + 1) + (a - 1) * cos(ww) + b * sin(ww);
+    _a1 = -2 * ((a - 1) + (a + 1) * cos(ww));
+    _a2 = (a + 1) + (a - 1) * cos(ww) - b * sin(ww);
   }
 
   @override
   void writeSample(int sample) {
-    if (sample == 0) {
-      sample = -32767;
+    var inp = sample / 32768.0;
+    var out =
+        (_b0 * inp + _b1 * _xn1 + _b2 * _xn2 - _a1 * _yn1 - _a2 * _yn2) / _a0;
+    _xn2 = _xn1;
+    _xn1 = inp;
+    _yn2 = _yn1;
+    _yn1 = out;
+
+    if (out > 1) {
+      out = 1;
     }
-
-    if (_first) {
-      _first = false;
-      super.writeSample(sample);
-      _previous = sample;
-      return;
+    if (out < -1) {
+      out = -1;
     }
-
-    _pulseLen += 1;
-
-    var delta = sample - _previous;
-
-    var isRise = delta > 17000;
-    var isFall = delta < -17000;
-
-    var wp = _previous;
-    _previous = sample;
-
-    if (isRise) {
-      if (_pulseLen > _samplesThreshold4) {
-        // 32
-        _last = wp;
-      } else if (_pulseLen > _samplesThreshold3) {
-        // 16
-        _last = (wp + (delta / 2)).round();
-      } else {
-        _last = 0;
-      }
-
-      if (_pulseLen < _samplesThreshold1) {
-        // 8
-        _step = (delta / 8).round();
-      } else {
-        _step = (delta / 12).round();
-      }
-      super.writeSample(_last);
-      _pulseLen = 0;
-      return;
-    }
-
-    if (isFall && _pulseLen > _samplesThreshold2) {
-      // 10
-      _last = 0;
-      _step = (delta / 12).round();
-      super.writeSample(_last);
-      _pulseLen = 0;
-      return;
-    }
-
-    if (isFall) {
-      _pulseLen = 0;
-    }
-
-    if (_step != 0) {
-      _last += _step;
-
-      if (_step > 0 && _last > sample) {
-        _last = sample;
-        _step = 0;
-      }
-
-      if (_step < 0 && _last < sample) {
-        _last = sample;
-        _step = 0;
-      }
-      super.writeSample(_last);
-      return;
-    }
-    super.writeSample(sample);
+    var v = (out * 32767).round();
+    super.writeSample(v);
   }
 }

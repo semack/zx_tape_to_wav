@@ -22,11 +22,14 @@ class WavBuilder {
   final Function(double percents) progress;
   BinaryWriter _writer;
 
-  WavBuilder(this.blocks, this.frequency, this.progress, this._writer) {
+  WavBuilder(this.blocks, this.frequency, this.progress,
+      {bool boosted = true}) {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
-    if (_writer == null)
+    if (boosted)
       _writer = BassBoostWriter(frequency);
+    else
+      _writer = BinaryWriter();
     var timeBase = _getLCM(frequency, _cpuFreq);
     _cpuTimeBase = timeBase / _cpuFreq;
     _sndTimeBase = timeBase / frequency;
@@ -200,5 +203,3 @@ class WavBuilder {
     return mm;
   }
 }
-
-

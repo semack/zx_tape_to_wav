@@ -63,7 +63,7 @@ class BassBoostWriter extends BinaryWriter {
       } else {
         _step = (delta / 12).round();
       }
-      super.writeSample(sample);
+      super.writeSample(_last);
       _pulseLen = 0;
       return;
     }
@@ -72,7 +72,7 @@ class BassBoostWriter extends BinaryWriter {
       // 10
       _last = 0;
       _step = (delta / 12).round();
-      super.writeSample(sample);
+      super.writeSample(_last);
       _pulseLen = 0;
       return;
     }
@@ -93,7 +93,7 @@ class BassBoostWriter extends BinaryWriter {
         _last = sample;
         _step = 0;
       }
-      super.writeSample(sample);
+      super.writeSample(_last);
       return;
     }
     super.writeSample(sample);

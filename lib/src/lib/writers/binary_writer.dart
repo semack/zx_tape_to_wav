@@ -1,4 +1,4 @@
-abstract class BinaryWriter {
+class BinaryWriter {
   List<int> _bytes;
 
   List<int> get bytes => _bytes;

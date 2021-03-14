@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
+import 'package:zx_tape_to_wav/src/lib/writers/binary_writer.dart';
 
 import 'lib/blocks.dart';
 import 'lib/wav_builder.dart';
@@ -48,10 +49,10 @@ class ZxTape {
   /// Returns WAV content as array of bytes.
   Future<Uint8List> toWavBytes(
       {int frequency = 44100,
-      bool amplifySignal = false,
+      BinaryWriter writer,
       Function(double percents) progress}) async {
     var builder =
-        WavBuilder(blocks, frequency, amplifySignal, progress);
+        WavBuilder(blocks, frequency, progress, writer);
     return builder.toBytes();
   }
 

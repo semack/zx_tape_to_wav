@@ -1,19 +1,17 @@
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
+
+import 'package:zx_tape_to_wav/src/lib/writers/bass_boost_writer.dart';
+import 'package:zx_tape_to_wav/src/lib/writers/binary_writer.dart';
 
 import 'blocks.dart';
 import 'extensions.dart';
 
 class WavBuilder {
-  final List<int> _bytes = [];
   double _cpuTimeStamp = 0;
   double _sndTimeStamp = 0;
   double _cpuTimeBase = 0;
   double _sndTimeBase = 0;
-  int _currentVol = 0;
-  int _maxRiseSamples = 0;
-  int _lastRiseSamples = 0;
   bool _currentLevel = false;
   final int _cpuFreq = 3500000;
   final List<BlockBase> blocks;
@@ -22,15 +20,17 @@ class WavBuilder {
   final int channels = 1;
   final int audioFormat = 1; //pcm
   final Function(double percents) progress;
-  final bool amplifySignal;
+  BinaryWriter _writer;
 
-  WavBuilder(this.blocks, this.frequency, this.amplifySignal, this.progress) {
+  WavBuilder(this.blocks, this.frequency, this.progress, this._writer) {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
+    if (_writer == null)
+      _writer = BinaryWriter();
+      //_writer = BassBoostWriter(frequency);
     var timeBase = _getLCM(frequency, _cpuFreq);
     _cpuTimeBase = timeBase / _cpuFreq;
     _sndTimeBase = timeBase / frequency;
-    _maxRiseSamples = (0.00015 * frequency).round();
   }
 
   Uint8List toBytes() {
@@ -55,14 +55,13 @@ class WavBuilder {
         }
       }
     }
-    _fillHeader(_bytes, frequency, bits, channels, audioFormat);
-    return Uint8List.fromList(_bytes);
+    _fillHeader(_writer.bytes, frequency, bits, channels, audioFormat);
+    return Uint8List.fromList(_writer.bytes);
   }
 
   void _addBlockSoundData(BlockBase block) {
     if (block is DataBlock) {
       if (block is! PureDataBlock) {
-        // pilotLen != 0
         for (var i = 0; i < block.pilotLen; i++) {
           _addEdge(block.pilotPulseLen);
         }
@@ -116,59 +115,17 @@ class WavBuilder {
     }
   }
 
-  var i = 0;
-
   void _appendLevel(int len, int lvl) {
     _cpuTimeStamp += len * _cpuTimeBase;
-    // Emit rise or fall
-    if (_currentVol != lvl) {
-      var riseSamples =
-          (((_cpuTimeStamp - _sndTimeStamp) / _sndTimeBase) / 2).round();
-
-      if (riseSamples > _maxRiseSamples) {
-        riseSamples = _maxRiseSamples;
-      }
-
-      var actualRiseSamples = riseSamples;
-      if (actualRiseSamples > _lastRiseSamples) {
-        actualRiseSamples = _lastRiseSamples;
-      }
-
-      _lastRiseSamples = riseSamples;
-
-      if (i < 1) {
-        print(cos(0));
-        print(cos(pi));
-        i++;
-      }
-      if (actualRiseSamples > 0) {
-        var phase = 0.0;
-        var phaseStep = (pi / actualRiseSamples).toDouble();
-        var amp = (lvl - _currentVol).toDouble();
-
-        for (var i = 0; i < actualRiseSamples; i++) {
-          var v = ((-cos(phase) + 1) / 2 * amp + _currentVol).round();
-          _bytes.add(v + 128);
-          phase += phaseStep;
-          _sndTimeStamp += _sndTimeBase;
-        }
-      }
-    }
-    // Emit sustain
-    while (_sndTimeStamp <= _cpuTimeStamp) {
-      _bytes.add(lvl + 128);
+    while (_sndTimeStamp < _cpuTimeStamp) {
+      _writer.writeSample(lvl);
       _sndTimeStamp += _sndTimeBase;
     }
-    _currentVol = lvl;
   }
 
   void _addEdge(int len) {
-    var hi = amplifySignal ? 127 : 63;
-    var lo = -hi;
-    var lvl = lo;
-    if (_currentLevel) {
-      lvl = hi;
-    }
+    var lvl = 32767;
+    if (!_currentLevel) lvl = -lvl;
     _appendLevel(len, lvl);
     _currentLevel = !_currentLevel;
   }
@@ -195,7 +152,7 @@ class WavBuilder {
     //   char riff[4];  // should be "RIFF"
     header.addAll(utf8encoder.convert('RIFF'));
     //   uint32_t len8; // file length - 8
-    header.addAll((_bytes.length - 8).asByteList(4));
+    header.addAll((bytes.length - 8).asByteList(4));
     //   char wave[4];  // should be "WAVE"
     header.addAll(utf8encoder.convert('WAVE'));
     //   char fmt[4];   // should be "fmt "
@@ -217,7 +174,7 @@ class WavBuilder {
     //   char data[4];      // should be "data"
     header.addAll(utf8encoder.convert('data'));
     //   uint32_t datlen;   // length of data block
-    header.addAll(bytes.length.asByteList(4));
+    header.addAll((bytes.length).asByteList(4));
 
     bytes.insertAll(0, header);
   }
@@ -244,3 +201,5 @@ class WavBuilder {
     return mm;
   }
 }
+
+

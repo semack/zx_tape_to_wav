@@ -14,8 +14,6 @@ void main() async {
       ZxTape.create(input)
           .then((tape) => tape.toWavBytes(
           frequency: 44100,
-          bits: 8,
-          amplifySignal: false,
           progress: (percents) {
             print('progress => $percents');
           }))
@@ -31,7 +29,6 @@ Contributions are welcome. Just open an Issue or submit a PR.
 You can reach me via my [email](mailto://semack@gmail.com).
 
 ## Thanks
-Many thanks especially to [Igor Maznitsa](https://github.com/raydac) for his [library](https://github.com/raydac/zxtap-to-wav) as a source for ideas.
-
+Many thanks especially to [Sergey Kireev](https://github.com/psk7) for the help on the WAV builder.
 
 

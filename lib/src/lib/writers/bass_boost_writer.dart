@@ -12,8 +12,7 @@ class BassBoostWriter extends BinaryWriter {
   int _samplesThreshold3;
   int _samplesThreshold4;
 
-  BassBoostWriter(this.frequency, {bool first = true}) {
-    _first = first;
+  BassBoostWriter(this.frequency) {
     _samplesThreshold1 =
         (185.0E-6 * frequency).round(); // 185 mkSec, 8 @ 44.1kHz
     _samplesThreshold2 =

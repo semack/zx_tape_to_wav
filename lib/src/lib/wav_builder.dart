@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:zx_tape_to_wav/src/lib/definitions.dart';
 import 'package:zx_tape_to_wav/src/lib/writers/bass_boost_writer.dart';
 import 'package:zx_tape_to_wav/src/lib/writers/binary_writer.dart';
 
@@ -126,7 +127,7 @@ class WavBuilder {
   }
 
   void _addEdge(int len) {
-    var lvl = 32767;
+    var lvl = Definitions.signalValue;
     if (!_currentLevel) lvl = -lvl;
     _appendLevel(len, lvl);
     _currentLevel = !_currentLevel;

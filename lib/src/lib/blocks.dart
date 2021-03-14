@@ -155,14 +155,14 @@ class PauseOrStopTheTapeBlock extends BlockBase {
 
   int get duration => _duration;
 
-  PauseOrStopTheTapeBlock(int index, ReadBuffer reader, {int duration = 2000}) : super(index, reader){
+  PauseOrStopTheTapeBlock(int index, ReadBuffer reader, {int duration = 2000})
+      : super(index, reader) {
     _duration = duration;
   }
 
   @override
   void _loadData(ReadBuffer reader) {
-    if (reader != null)
-      _duration = reader.getUint16();
+    if (reader != null) _duration = reader.getUint16();
   }
 }
 
@@ -243,8 +243,8 @@ class SelectBlock extends BlockBase {
 
   @override
   void _loadData(ReadBuffer reader) {
-    var length = reader.getUint16(); // skip length
-    var count = length = reader.getUint8();
+    reader.getUint16(); // skip length
+    var count = reader.getUint8();
     for (int i = 0; i < count; i++) {
       var offset = reader.getUint16();
       var len = reader.getUint8();
@@ -261,7 +261,7 @@ class SelectBlock extends BlockBase {
 class TextDescriptionBlock extends BlockBase {
   String _description;
 
-  String get description => description;
+  String get description => _description;
 
   TextDescriptionBlock(int index, ReadBuffer reader) : super(index, reader);
 

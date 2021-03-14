@@ -26,8 +26,7 @@ class WavBuilder {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
     if (_writer == null)
-      _writer = BinaryWriter();
-      //_writer = BassBoostWriter(frequency);
+      _writer = BassBoostWriter(frequency);
     var timeBase = _getLCM(frequency, _cpuFreq);
     _cpuTimeBase = timeBase / _cpuFreq;
     _sndTimeBase = timeBase / frequency;

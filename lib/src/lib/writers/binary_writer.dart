@@ -1,4 +1,4 @@
-class BinaryWriter {
+abstract class BinaryWriter {
   List<int> _bytes;
 
   List<int> get bytes => _bytes;
@@ -8,7 +8,7 @@ class BinaryWriter {
   }
 
   void writeSample(int sample) {
-    var v8 = ((sample / 256) + 128).round();
+    var v8 = ((sample >> 8) + 128).round();
     _bytes.add(v8);
   }
 }

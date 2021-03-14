@@ -24,6 +24,11 @@ class BassBoostWriter extends BinaryWriter {
         (730.0E-6 * frequency).round(); // 730 mkSec, 32 @ 44.1kHz
   }
 
+  void _add(int sample)
+  {
+    super.writeSample(sample);
+  }
+
   @override
   void writeSample(int sample) {
     {
@@ -33,7 +38,7 @@ class BassBoostWriter extends BinaryWriter {
 
       if (_first) {
         _first = false;
-        bytes.add(sample);
+        _add(sample);
         _previous = sample;
         return;
       }
@@ -65,7 +70,7 @@ class BassBoostWriter extends BinaryWriter {
         } else {
           _step = (delta / 12).round();
         }
-        bytes.add(_last);
+        _add(_last);
         _pulseLen = 0;
         return;
       }
@@ -74,7 +79,7 @@ class BassBoostWriter extends BinaryWriter {
         // 10
         _last = 0;
         _step = (delta / 12).round();
-        bytes.add(_last);
+        _add(_last);
         _pulseLen = 0;
         return;
       }
@@ -95,10 +100,10 @@ class BassBoostWriter extends BinaryWriter {
           _last = sample;
           _step = 0;
         }
-        bytes.add(_last);
+        _add(_last);
         return;
       }
-      bytes.add(sample);
+      _add(sample);
     }
   }
 }

@@ -23,7 +23,7 @@ class BassBoostWriter extends BinaryWriter {
     var hzBass = 250.0;
 
     // Calculate coefficients
-    var ww = 2.0 * pi * hzBass / 8;
+    var ww = 2.0 * pi * hzBass / frequency;
     var a = exp(log(10.0) * bass / 40);
     var b = sqrt((a * a + 1) / slope - (pow(a - 1, 2)));
 

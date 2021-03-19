@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 
 abstract class BlockBase {
-  int _index;
+  int _index = -1;
 
   int get index => _index;
 
@@ -43,7 +43,7 @@ class DataBlock extends BlockBase {
   int _pilotLen = 8083;
 
   int get pilotLen => _pilotLen;
-  Uint8List _data;
+  Uint8List _data = Uint8List(0);
 
   Uint8List get data => _data;
 
@@ -95,8 +95,8 @@ class TurboSpeedDataBlock extends DataBlock {
 
 // 0x12
 class PureToneBlock extends BlockBase {
-  int _pulseLen;
-  int _pulses;
+  int _pulseLen = 0;
+  int _pulses = 0;
 
   int get pulseLen => _pulseLen;
 
@@ -113,7 +113,7 @@ class PureToneBlock extends BlockBase {
 
 // 0x13
 class PulseSequenceBlock extends BlockBase {
-  Uint16List _pulses;
+  Uint16List _pulses = Uint16List(0);
 
   Uint16List get pulses => _pulses;
 
@@ -151,26 +151,26 @@ class PureDataBlock extends DataBlock {
 
 // 0x20, 0x2A
 class PauseOrStopTheTapeBlock extends BlockBase {
-  int _duration;
+  int _duration = 0;
 
   int get duration => _duration;
 
-  PauseOrStopTheTapeBlock(int index, ReadBuffer reader, {int duration = 2000})
+  PauseOrStopTheTapeBlock(int index, ReadBuffer reader, {int duration = 0})
       : super(index, reader) {
     _duration = duration;
   }
 
   @override
   void _loadData(ReadBuffer reader) {
-    if (reader != null) _duration = reader.getUint16();
+    if (duration > 0) _duration = reader.getUint16();
   }
 }
 
 // 0x21
 class GroupStartBlock extends BlockBase {
-  String _groupName;
+  String? _groupName;
 
-  String get groupName => _groupName;
+  String? get groupName => _groupName;
 
   GroupStartBlock(int index, ReadBuffer reader) : super(index, reader);
 
@@ -193,7 +193,7 @@ class GroupEndBlock extends BlockBase {
 
 // 0x23
 class JumpToBlock extends BlockBase {
-  int _offset;
+  int _offset = 0;
 
   int get offset => _offset;
 
@@ -207,7 +207,7 @@ class JumpToBlock extends BlockBase {
 
 // 0x24
 class LoopStartBlock extends BlockBase {
-  int _repetitions;
+  int _repetitions = 0;
 
   int get repetitions => _repetitions;
 
@@ -242,8 +242,8 @@ class SelectBlock extends BlockBase {
   List<SelectInfo> _selectInfo = [];
 
   @override
-  void _loadData(ReadBuffer reader) {
-    reader.getUint16(); // skip length
+  void _loadData(ReadBuffer? reader) {
+    reader!.getUint16(); // skip length
     var count = reader.getUint8();
     for (int i = 0; i < count; i++) {
       var offset = reader.getUint16();
@@ -259,9 +259,9 @@ class SelectBlock extends BlockBase {
 
 // 0x30
 class TextDescriptionBlock extends BlockBase {
-  String _description;
+  String? _description;
 
-  String get description => _description;
+  String? get description => _description;
 
   TextDescriptionBlock(int index, ReadBuffer reader) : super(index, reader);
 
@@ -274,12 +274,12 @@ class TextDescriptionBlock extends BlockBase {
 
 // 0x31
 class MessageBlock extends BlockBase {
-  int _durationSec;
-  String _message;
+  int _durationSec = 0;
+  String? _message;
 
   int get durationSec => _durationSec;
 
-  String get message => _message;
+  String? get message => _message;
 
   MessageBlock(int index, ReadBuffer reader) : super(index, reader);
 
@@ -293,9 +293,9 @@ class MessageBlock extends BlockBase {
 
 // 0x32
 class ArchiveInfoBlock extends BlockBase {
-  String _description;
+  String? _description;
 
-  String get description => _description;
+  String? get description => _description;
 
   ArchiveInfoBlock(int index, ReadBuffer reader) : super(index, reader);
 
@@ -336,12 +336,12 @@ class HardwareTypeBlock extends BlockBase {
 
 // 0x35
 class CustomInfoBlock extends BlockBase {
-  Uint8List _info;
+  Uint8List _info = Uint8List(0);
 
   Uint8List get info => _info;
-  String _identification;
+  String? _identification;
 
-  String get identification => _identification;
+  String? get identification => _identification;
 
   CustomInfoBlock(int index, ReadBuffer reader) : super(index, reader);
 

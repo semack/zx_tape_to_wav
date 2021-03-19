@@ -1,12 +1,12 @@
 name: zx_tape_to_wav
 description: Easy Flutter library to convert .TAP/.TZX files (a data format for ZX-Spectrum emulator) into sound WAV file.
 
-version: 2.1.16
+version: 3.0.0+1
 
 homepage: https://github.com/semack/zx_tape_to_wav
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
-  test: ^1.6.0
+  test: ^1.16.5
   flutter_test:
     sdk: flutter
 

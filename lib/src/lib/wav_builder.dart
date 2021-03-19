@@ -15,13 +15,13 @@ class WavBuilder {
   double _sndTimeBase = 0;
   bool _currentLevel = false;
   final int _cpuFreq = 3500000;
-  final List<BlockBase> blocks;
+  final List<BlockBase?> blocks;
   final int frequency;
   final int bits = 8;
   final int channels = 1;
   final int audioFormat = 1; //pcm
-  final Function(double percents) progress;
-  BinaryWriter _writer;
+  final Function(double percents)? progress;
+  late BinaryWriter _writer;
 
   WavBuilder(this.blocks, this.frequency, this.progress,
       {bool boosted = true}) {
@@ -37,8 +37,8 @@ class WavBuilder {
   }
 
   Uint8List toBytes() {
-    int loopRepetitions;
-    int loopIndex;
+    int loopRepetitions = 0;
+    int? loopIndex;
     for (var i = 0; i < blocks.length; i++) {
       var block = blocks[i];
       if (block is LoopStartBlock) {
@@ -46,7 +46,7 @@ class WavBuilder {
         loopRepetitions = block.repetitions;
       } else if (block is LoopEndBlock) {
         loopRepetitions--;
-        if (loopRepetitions > 0) i = loopIndex;
+        if (loopRepetitions > 0) i = loopIndex!;
       } else if (block is JumpToBlock)
         i += block.offset;
       else {
@@ -54,7 +54,7 @@ class WavBuilder {
         if (progress != null) {
           var percents = 100.0;
           if (i < blocks.length - 1) percents = (100 / blocks.length) * i;
-          progress(percents);
+          progress!(percents);
         }
       }
     }
@@ -62,7 +62,7 @@ class WavBuilder {
     return Uint8List.fromList(_writer.bytes);
   }
 
-  void _addBlockSoundData(BlockBase block) {
+  void _addBlockSoundData(BlockBase? block) {
     if (block is DataBlock) {
       if (block is! PureDataBlock) {
         for (var i = 0; i < block.pilotLen; i++) {

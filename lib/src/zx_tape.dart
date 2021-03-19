@@ -8,12 +8,12 @@ import 'lib/wav_builder.dart';
 enum TapeType { unknown, tap, tzx }
 
 class ZxTape {
-  ReadBuffer _reader;
+  ReadBuffer? _reader;
 
-  final List<BlockBase> _blocks = [];
+  final List<BlockBase?> _blocks = [];
 
   /// A list of recognized data blocks
-  Iterable<BlockBase> get blocks => _blocks;
+  Iterable<BlockBase?> get blocks => _blocks;
 
   var _tapeType = TapeType.unknown;
 
@@ -29,7 +29,7 @@ class ZxTape {
   }
 
   ZxTape._create(ByteData data) {
-    _reader = new ReadBuffer(data);
+    _reader = ReadBuffer(data);
   }
 
   Future _load() async {
@@ -38,35 +38,36 @@ class ZxTape {
       throw new ArgumentError('Incompatible data format.');
 
     var index = 0;
-    while (_reader.hasRemaining) {
+    while (_reader!.hasRemaining) {
       var block = await _readBlock(index);
       _blocks.add(block);
       index++;
     }
-    _blocks.add(PauseOrStopTheTapeBlock(index, null));
+    _blocks.add(PauseOrStopTheTapeBlock(index, _reader!, duration: 2000));
   }
 
   /// Returns WAV content as array of bytes.
   Future<Uint8List> toWavBytes(
       {int frequency = 44100,
       bool boosted = true,
-      Function(double percents) progress}) async {
-    var builder = WavBuilder(blocks, frequency, progress, boosted: boosted);
+      Function(double percents)? progress}) async {
+    var builder = WavBuilder(blocks as List<BlockBase?>, frequency, progress,
+        boosted: boosted);
     return builder.toBytes();
   }
 
   Future<TapeType> _detectFileType() async {
     try {
       // checking tzx
-      var reader = ReadBuffer(_reader.data);
+      var reader = ReadBuffer(_reader!.data);
       var magic = reader.getInt64();
       if (magic == 0x1a2165706154585a) {
         // skipping header, setting zero position for rich data
-        _reader.getUint8List(10);
+        _reader!.getUint8List(10);
         return TapeType.tzx;
       }
       // checking tap
-      reader = ReadBuffer(_reader.data);
+      reader = ReadBuffer(_reader!.data);
       var testBlock = DataBlock(0, reader);
       if (testBlock.isCheckSumValid) return TapeType.tap;
     } catch (e) {}
@@ -74,55 +75,56 @@ class ZxTape {
     return TapeType.unknown;
   }
 
-  Future<BlockBase> _readBlock(int index) async {
+  Future<BlockBase?> _readBlock(int index) async {
+    var reader = _reader!;
+
     switch (_tapeType) {
       case TapeType.tap:
-        return new DataBlock(index, _reader);
+        return DataBlock(index, reader);
       case TapeType.tzx:
-        var blockType = _reader.getUint8();
+        var blockType = reader.getUint8();
         switch (blockType) {
           case 0x10:
-            return new StandardSpeedDataBlock(index, _reader);
+            return StandardSpeedDataBlock(index, reader);
           case 0x11:
-            return new TurboSpeedDataBlock(index, _reader);
+            return TurboSpeedDataBlock(index, reader);
           case 0x12:
-            return new PureToneBlock(index, _reader);
+            return PureToneBlock(index, reader);
           case 0x13:
-            return new PulseSequenceBlock(index, _reader);
+            return PulseSequenceBlock(index, reader);
           case 0x14:
-            return new PureDataBlock(index, _reader);
+            return PureDataBlock(index, reader);
           case 0x20:
           case 0x2A:
-            return new PauseOrStopTheTapeBlock(index, _reader);
+            return PauseOrStopTheTapeBlock(index, reader);
           case 0x21:
-            return new GroupStartBlock(index, _reader);
+            return GroupStartBlock(index, reader);
           case 0x22:
-            return new GroupEndBlock(index, _reader);
+            return GroupEndBlock(index, reader);
           case 0x23:
-            return new JumpToBlock(index, _reader);
+            return JumpToBlock(index, reader);
           case 0x24:
-            return new LoopStartBlock(index, _reader);
+            return LoopStartBlock(index, reader);
           case 0x25:
-            return new LoopEndBlock(index, _reader);
+            return LoopEndBlock(index, reader);
           case 0x28:
-            return new SelectBlock(index, _reader);
+            return SelectBlock(index, reader);
           case 0x30:
-            return new TextDescriptionBlock(index, _reader);
+            return TextDescriptionBlock(index, reader);
           case 0x31:
-            return new MessageBlock(index, _reader);
+            return MessageBlock(index, reader);
           case 0x32:
-            return new ArchiveInfoBlock(index, _reader);
+            return ArchiveInfoBlock(index, reader);
           case 0x33:
-            return new HardwareTypeBlock(index, _reader);
+            return HardwareTypeBlock(index, reader);
           case 0x35:
-            return new CustomInfoBlock(index, _reader);
+            return CustomInfoBlock(index, reader);
           case 0x5A:
-            return new GlueBlock(index, _reader);
+            return GlueBlock(index, reader);
           default:
             throw new ArgumentError(
                 'Unexpected type 0x${blockType.toRadixString(16)} of block #$index');
         }
-        break;
       default:
         return null;
     }

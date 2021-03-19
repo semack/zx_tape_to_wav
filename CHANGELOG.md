@@ -1,3 +1,6 @@
+## 3.0.0
+null-safety
+
 ## 2.1.16
 Fixed SpeedLock 2. Refactoring.
 

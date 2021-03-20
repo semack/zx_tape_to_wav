@@ -1,5 +1,5 @@
-# 3.0.1+4
-Optimized converter.
+# 3.0.1+5
+Optimized converter. Removed detect tape method, use the related property instead.
 
 ## 3.0.0
 Added null-safety

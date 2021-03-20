@@ -27,7 +27,7 @@ class ZxTape {
   final ByteData _data;
 
   ZxTape._create(this._data){
-    _tapeType = detectTapeType(_data);
+    _tapeType = _detectTapeType(_data);
   }
 
   Future _load() async {
@@ -69,8 +69,7 @@ class ZxTape {
     return builder.toBytes();
   }
 
-  /// Detect Tape file format.
-  static TapeType detectTapeType(ByteData data)  {
+  static TapeType _detectTapeType(ByteData data)  {
     try {
       // checking tzx
       var reader = ReadBuffer(data);

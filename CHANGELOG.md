@@ -1,3 +1,6 @@
+# 3.0.1+3
+added detectTape method
+
 ## 3.0.0
 null-safety
 

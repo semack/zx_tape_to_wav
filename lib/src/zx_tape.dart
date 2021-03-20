@@ -57,7 +57,7 @@ class ZxTape {
   }
 
   /// Detect Tape file format.
-  Future<TapeType> detectTapeType(ByteData data) async {
+  static Future<TapeType> detectTapeType(ByteData data) async {
     try {
       // checking tzx
       var reader = ReadBuffer(data);

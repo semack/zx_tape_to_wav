@@ -15,7 +15,7 @@ class WavBuilder {
   double _sndTimeBase = 0;
   bool _currentLevel = false;
   final int _cpuFreq = 3500000;
-  final List<BlockBase?> blocks;
+  final List<BlockBase> blocks;
   final int frequency;
   final int bits = 8;
   final int channels = 1;

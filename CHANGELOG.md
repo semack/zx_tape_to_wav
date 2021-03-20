@@ -1,8 +1,8 @@
-# 3.0.1+3
-added detectTape method
+# 3.0.1+4
+Optimized converter.
 
 ## 3.0.0
-null-safety
+Added null-safety
 
 ## 2.1.16
 Fixed SpeedLock 2. Refactoring.

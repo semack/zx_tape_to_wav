@@ -12,9 +12,6 @@ class ZxTape {
 
   final List<BlockBase> _blocks = [];
 
-  /// A list of recognized data blocks
-  Iterable<BlockBase> get blocks => _blocks;
-
   var _tapeType = TapeType.unknown;
 
   /// A type of source byte array (TAP or TZX)
@@ -24,18 +21,30 @@ class ZxTape {
   /// Incoming byte array must be specified.
   static Future<ZxTape> create(Uint8List bytes) async {
     var tape = ZxTape._create(bytes.buffer.asByteData());
-    await tape._load();
     return tape;
   }
 
-  ZxTape._create(ByteData data) {
-    _reader = ReadBuffer(data);
+  final ByteData _data;
+
+  ZxTape._create(this._data){
+    _tapeType = detectTapeType(_data);
   }
 
   Future _load() async {
-    _tapeType = await detectTapeType(_reader!.data);
     if (_tapeType == TapeType.unknown)
       throw new ArgumentError('Incompatible data format.');
+
+    _reader = ReadBuffer(_data);
+
+    // skipping headers
+    switch (_tapeType) {
+      case TapeType.tzx:
+        // skipping header, setting zero position for rich data
+        _reader!.getUint8List(10);
+        break;
+      default:
+        break;
+    }
 
     var index = 0;
     while (_reader!.hasRemaining) {
@@ -51,20 +60,22 @@ class ZxTape {
       {int frequency = 44100,
       bool boosted = true,
       Function(double percents)? progress}) async {
-    var builder = WavBuilder(blocks as List<BlockBase?>, frequency, progress,
+
+    if (_blocks.isEmpty)
+      await _load();
+
+    var builder = WavBuilder(_blocks, frequency, progress,
         boosted: boosted);
     return builder.toBytes();
   }
 
   /// Detect Tape file format.
-  static Future<TapeType> detectTapeType(ByteData data) async {
+  static TapeType detectTapeType(ByteData data)  {
     try {
       // checking tzx
       var reader = ReadBuffer(data);
       var magic = reader.getInt64();
       if (magic == 0x1a2165706154585a) {
-        // skipping header, setting zero position for rich data
-        reader.getUint8List(10);
         return TapeType.tzx;
       }
       // checking tap

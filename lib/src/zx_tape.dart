@@ -10,10 +10,10 @@ enum TapeType { unknown, tap, tzx }
 class ZxTape {
   ReadBuffer? _reader;
 
-  final List<BlockBase?> _blocks = [];
+  final List<BlockBase> _blocks = [];
 
   /// A list of recognized data blocks
-  Iterable<BlockBase?> get blocks => _blocks;
+  Iterable<BlockBase> get blocks => _blocks;
 
   var _tapeType = TapeType.unknown;
 
@@ -33,14 +33,14 @@ class ZxTape {
   }
 
   Future _load() async {
-    _tapeType = await _detectFileType();
+    _tapeType = await detectTapeType(_reader!.data);
     if (_tapeType == TapeType.unknown)
       throw new ArgumentError('Incompatible data format.');
 
     var index = 0;
     while (_reader!.hasRemaining) {
       var block = await _readBlock(index);
-      _blocks.add(block);
+      _blocks.add(block!);
       index++;
     }
     _blocks.add(PauseOrStopTheTapeBlock(index, _reader!, duration: 2000));
@@ -56,18 +56,19 @@ class ZxTape {
     return builder.toBytes();
   }
 
-  Future<TapeType> _detectFileType() async {
+  /// Detect Tape file format.
+  Future<TapeType> detectTapeType(ByteData data) async {
     try {
       // checking tzx
-      var reader = ReadBuffer(_reader!.data);
+      var reader = ReadBuffer(data);
       var magic = reader.getInt64();
       if (magic == 0x1a2165706154585a) {
         // skipping header, setting zero position for rich data
-        _reader!.getUint8List(10);
+        reader.getUint8List(10);
         return TapeType.tzx;
       }
       // checking tap
-      reader = ReadBuffer(_reader!.data);
+      reader = ReadBuffer(data);
       var testBlock = DataBlock(0, reader);
       if (testBlock.isCheckSumValid) return TapeType.tap;
     } catch (e) {}

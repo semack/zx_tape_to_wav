@@ -97,8 +97,8 @@ class ZxTape {
       case TapeType.tzx:
         var blockType = reader.getUint8();
         switch (blockType) {
-          case 0x0:
-            return null;
+          // case 0x0:
+          //   return null;
           case 0x10:
             return StandardSpeedDataBlock(index, reader);
           case 0x11:

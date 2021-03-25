@@ -151,18 +151,19 @@ class PureDataBlock extends DataBlock {
 
 // 0x20, 0x2A
 class PauseOrStopTheTapeBlock extends BlockBase {
-  int _duration = 0;
-
+  var _duration;
   int get duration => _duration;
 
   PauseOrStopTheTapeBlock(int index, ReadBuffer reader, {int duration = 0})
-      : super(index, reader) {
+      : super(index, reader)
+  {
     _duration = duration;
+    _loadData(reader);
   }
 
   @override
   void _loadData(ReadBuffer reader) {
-    if (duration > 0) _duration = reader.getUint16();
+    if (_duration == 0) _duration = reader.getUint16();
   }
 }
 

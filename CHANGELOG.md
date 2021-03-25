@@ -1,4 +1,7 @@
 # 3.0.1+5
+Fixed #0 block
+
+# 3.0.1+5
 Optimized converter. Removed detect tape method, use the related property instead.
 
 ## 3.0.0

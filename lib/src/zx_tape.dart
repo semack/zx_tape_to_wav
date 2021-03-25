@@ -49,8 +49,10 @@ class ZxTape {
     var index = 0;
     while (_reader!.hasRemaining) {
       var block = await _readBlock(index);
-      _blocks.add(block!);
-      index++;
+      if (block != null) {
+        _blocks.add(block);
+        index++;
+      }
     }
     _blocks.add(PauseOrStopTheTapeBlock(index, _reader!, duration: 2000));
   }
@@ -95,6 +97,8 @@ class ZxTape {
       case TapeType.tzx:
         var blockType = reader.getUint8();
         switch (blockType) {
+          case 0x0:
+            return null;
           case 0x10:
             return StandardSpeedDataBlock(index, reader);
           case 0x11:

@@ -1,3 +1,6 @@
+## 3.0.0+2
+Fixed #0 block
+
 ## 3.0.0
 null-safety
 

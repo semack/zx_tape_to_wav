@@ -9,4 +9,6 @@ class BinaryWriter {
     var v8 = ((sample >> 8) + 128).round();
     _bytes.add(v8);
   }
+
+  void flush() {}
 }

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:zx_tape_to_wav/src/lib/definitions.dart';
-import 'package:zx_tape_to_wav/src/lib/writers/bass_boost_writer.dart';
 import 'package:zx_tape_to_wav/src/lib/writers/binary_writer.dart';
+import 'package:zx_tape_to_wav/src/lib/writers/tapir_writer.dart';
 
 import 'blocks.dart';
 import 'extensions.dart';
@@ -28,7 +28,7 @@ class WavBuilder {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
     if (boosted)
-      _writer = BassBoostWriter(frequency);
+      _writer = TapirWriter(frequency);
     else
       _writer = BinaryWriter();
     var timeBase = _getLCM(frequency, _cpuFreq);
@@ -58,6 +58,7 @@ class WavBuilder {
         }
       }
     }
+    _writer.flush();
     _fillHeader(_writer.bytes, frequency, bits, channels, audioFormat);
     return Uint8List.fromList(_writer.bytes);
   }
@@ -126,24 +127,31 @@ class WavBuilder {
     }
   }
 
-  void _addEdge(int len) {
-    var lvl = Definitions.signalValue;
-    if (!_currentLevel) lvl = -lvl;
+  void _appendLevelBool(int len, bool level) {
+    var lvl = -Definitions.signalValue;
+
+    if (level) {
+      lvl = -lvl;
+    }
     _appendLevel(len, lvl);
+  }
+
+  void _addEdge(int len) {
+    _appendLevelBool(len, _currentLevel);
     _currentLevel = !_currentLevel;
   }
 
-  void _addPause(int milliSeconds) {
-    var ll = milliSeconds - 1;
-    var msl = _cpuFreq ~/ 1000;
-    _addEdge(msl);
+  // void _continuePrevious(int len) {
+  //   _appendLevelBool(len, _currentLevel);
+  // }
 
-    //if last edge is fall, issue another rise for 2 ms
-    if (_currentLevel) {
-      _addEdge(msl * 2);
-      ll -= 2;
-    }
-    _appendLevel(ll * msl, 0);
+  void _addPause(int lenMs) {
+    if (lenMs == 0)
+      return;
+
+    var v = (lenMs * (_cpuFreq / 1000)).round();
+    _appendLevelBool(v, _currentLevel);
+
     _currentLevel = false;
   }
 

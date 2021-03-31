@@ -1,11 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
+import 'package:zx_tape_to_wav/src/lib/enums.dart';
 
 import 'lib/blocks.dart';
 import 'package:zx_tape_to_wav/src/lib/wav_builder.dart';
-
-enum TapeType { unknown, tap, tzx }
 
 class ZxTape {
   ReadBuffer? _reader;

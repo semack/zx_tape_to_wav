@@ -2,14 +2,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'definitions.dart';
+import 'enums.dart';
 import 'writers/bass_boost_writer.dart';
 import 'writers/binary_writer.dart';
 import 'writers/tapir_writer.dart';
 
 import 'blocks.dart';
 import 'extensions.dart';
-
-enum AudioFilterType { none, heuristic, bassBoost, tapir }
 
 class WavBuilder {
   double _cpuTimeStamp = 0;

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zx_tape_to_wav/src/lib/wav_builder.dart';
+import 'package:zx_tape_to_wav/src/lib/enums.dart';
 import 'package:zx_tape_to_wav/zx_tape_to_wav.dart';
 
 void main() async {

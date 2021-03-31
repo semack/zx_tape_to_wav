@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
@@ -249,7 +250,7 @@ class GeneralizedDataBlock extends BlockBase {
     if (totd != 0) {
       var syms = readSymDefs(reader, asd, npd);
 
-      var nb = asd.log2().ceil();
+      var nb = (log(asd) / log(2)).ceil();
 
       var rd = BitReader(reader);
       for (var i = 0; i < totd; i++) {

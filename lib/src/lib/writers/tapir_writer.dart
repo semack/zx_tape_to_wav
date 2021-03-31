@@ -15,7 +15,7 @@ class TapirWriter extends BinaryWriter {
   final double _r4_0 = 1400;
   final double _r5 = 8000;
 
- // final double _c1 = 100E-9;
+  // final double _c1 = 100E-9;
   final double _c2 = 100E-9;
   final double _c3 = 10E-9;
 

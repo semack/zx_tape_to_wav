@@ -26,7 +26,7 @@ class ZxTape {
 
   final ByteData _data;
 
-  ZxTape._create(this._data){
+  ZxTape._create(this._data) {
     _tapeType = _detectTapeType(_data);
   }
 
@@ -62,16 +62,13 @@ class ZxTape {
       {int frequency = 44100,
       bool boosted = true,
       Function(double percents)? progress}) async {
+    if (_blocks.isEmpty) await _load();
 
-    if (_blocks.isEmpty)
-      await _load();
-
-    var builder = WavBuilder(_blocks, frequency, progress,
-        boosted: boosted);
+    var builder = WavBuilder(_blocks, frequency, progress, boosted: boosted);
     return builder.toBytes();
   }
 
-  static TapeType _detectTapeType(ByteData data)  {
+  static TapeType _detectTapeType(ByteData data) {
     try {
       // checking tzx
       var reader = ReadBuffer(data);
@@ -109,6 +106,8 @@ class ZxTape {
             return PulseSequenceBlock(index, reader);
           case 0x14:
             return PureDataBlock(index, reader);
+          case 0x19:
+            return GeneralizedDataBlock(index, reader);
           case 0x20:
           case 0x2A:
             return PauseOrStopTheTapeBlock(index, reader);

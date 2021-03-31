@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
+import 'package:zx_tape_to_wav/src/lib/extensions.dart';
 
 abstract class BlockBase {
   int _index = -1;
@@ -149,14 +150,125 @@ class PureDataBlock extends DataBlock {
   }
 }
 
+// 0x19
+class SymDef {
+  final int t;
+  final List<int> d;
+
+  SymDef(this.t, this.d);
+}
+
+class BitReader {
+  final ReadBuffer src;
+  int bitPos = -1;
+  int data = 0;
+
+  BitReader(this.src);
+
+  int read() {
+    if (bitPos < 0) {
+      data = src.getUint8();
+      bitPos = 7;
+    }
+    var v = data & (1 << bitPos);
+    bitPos--;
+    if (v != 0) v = 1;
+    return v;
+  }
+
+  int readBits(int bits) {
+    int v = 0;
+    int i = 0;
+
+    while (i < bits) {
+      v <<= 1;
+      v |= read();
+      i++;
+    }
+    return v;
+  }
+}
+
+class GeneralizedDataBlock extends BlockBase {
+  List<SymDef> get data => _data;
+  var _data = <SymDef>[];
+  var _tailMs = 0;
+
+  int get tailMs => _tailMs;
+
+  GeneralizedDataBlock(int index, ReadBuffer reader) : super(index, reader);
+
+  List<SymDef> readSymDefs(ReadBuffer reader, int c, int p) {
+    var result = <SymDef>[];
+
+    for (var i = 0; i < c; i++) {
+      var t = reader.getUint8();
+
+      var d = <int>[];
+      for (var i = 0; i < p; i++) d.add(reader.getUint16());
+
+      // var d = reader.getUint16List(p);
+      var s = SymDef(t, d);
+      result.add(s);
+    }
+    return result;
+  }
+
+  @override
+  void _loadData(ReadBuffer reader) {
+    var totalBlockLength = reader.getUint32();
+    _tailMs = reader.getUint16();
+
+    var totp = reader.getUint32();
+    var npp = reader.getUint8();
+    var rb = reader.getUint8();
+    var asp = rb;
+    if (asp == 0) asp = 256;
+
+    var totd = reader.getUint32();
+    var npd = reader.getUint8();
+    rb = reader.getUint8();
+    var asd = rb;
+    if (asd == 0) asd = 256;
+
+    var pd = <SymDef>[];
+
+    if (totp != 0) {
+      var syms = readSymDefs(reader, asp, npp);
+
+      for (var i = 0; i < totp; i++) {
+        var symnum = reader.getUint8();
+        var symcnt = reader.getUint16();
+        while (symcnt > 0) {
+          pd.add(syms[symnum]);
+          symcnt--;
+        }
+      }
+    }
+
+    if (totd != 0) {
+      var syms = readSymDefs(reader, asd, npd);
+
+      var nb = asd.log2().ceil();
+
+      var rd = BitReader(reader);
+      for (var i = 0; i < totd; i++) {
+        var symnum = rd.readBits(nb);
+        pd.add(syms[symnum]);
+      }
+    }
+    _data = pd;
+  }
+}
+
 // 0x20, 0x2A
 class PauseOrStopTheTapeBlock extends BlockBase {
   var _duration;
+
   int get duration => _duration;
 
   PauseOrStopTheTapeBlock(int index, ReadBuffer reader, {int duration = 0})
-      : super(index, reader)
-  {
+      : super(index, reader) {
     _duration = duration;
     _loadData(reader);
   }

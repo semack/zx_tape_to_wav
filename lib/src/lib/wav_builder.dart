@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:zx_tape_to_wav/src/lib/definitions.dart';
+import 'package:zx_tape_to_wav/src/lib/writers/bass_boost_writer.dart';
 import 'package:zx_tape_to_wav/src/lib/writers/binary_writer.dart';
-import 'package:zx_tape_to_wav/src/lib/writers/tapir_writer.dart';
 
 import 'blocks.dart';
 import 'extensions.dart';
@@ -28,7 +28,7 @@ class WavBuilder {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
     if (boosted)
-      _writer = TapirWriter(frequency);
+      _writer = BassBoostWriter(frequency);
     else
       _writer = BinaryWriter();
     var timeBase = _getLCM(frequency, _cpuFreq);
@@ -102,7 +102,6 @@ class WavBuilder {
           _addEdge(block.zeroLen);
         }
       }
-
       if (block.tailMs > 0) {
         _addPause(block.tailMs);
       }
@@ -116,7 +115,38 @@ class WavBuilder {
       });
     } else if (block is PauseOrStopTheTapeBlock) {
       _addPause(block.duration);
+    } else if (block is GeneralizedDataBlock) {
+      block.data.forEach((item) {
+        for (var i = 0; i < item.d.length; i++) {
+          var s = item.d[i];
+          if (s == 0) break;
+          if (i != 0) {
+            _addEdge(s);
+            continue;
+          }
+          switch (item.t) {
+            case 0:
+              _addEdge(s);
+              break;
+            case 1:
+              _continuePrevious(s);
+              break;
+            case 2:
+              _setLevel(false, s);
+              break;
+            case 3:
+              _setLevel(true, s);
+              break;
+          }
+        }
+      });
+      if (block.tailMs > 0) _addPause(block.tailMs);
     }
+  }
+
+  void _setLevel(bool level, int len) {
+    _appendLevelBool(len, _currentLevel);
+    _currentLevel = level;
   }
 
   void _appendLevel(int len, int lvl) {
@@ -141,13 +171,12 @@ class WavBuilder {
     _currentLevel = !_currentLevel;
   }
 
-  // void _continuePrevious(int len) {
-  //   _appendLevelBool(len, _currentLevel);
-  // }
+  void _continuePrevious(int len) {
+    _appendLevelBool(len, _currentLevel);
+  }
 
   void _addPause(int lenMs) {
-    if (lenMs == 0)
-      return;
+    if (lenMs == 0) return;
 
     var v = (lenMs * (_cpuFreq / 1000)).round();
     _appendLevelBool(v, _currentLevel);

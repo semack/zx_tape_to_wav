@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:zx_tape_to_wav/src/lib/definitions.dart';
-import 'package:zx_tape_to_wav/src/lib/writers/bass_boost_writer.dart';
-import 'package:zx_tape_to_wav/src/lib/writers/binary_writer.dart';
-import 'package:zx_tape_to_wav/src/lib/writers/tapir_writer.dart';
+import 'definitions.dart';
+import 'writers/bass_boost_writer.dart';
+import 'writers/binary_writer.dart';
+import 'writers/tapir_writer.dart';
 
 import 'blocks.dart';
 import 'extensions.dart';

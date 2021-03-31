@@ -4,8 +4,8 @@
 
 import 'dart:math';
 
-import 'package:zx_tape_to_wav/src/lib/definitions.dart';
-import 'package:zx_tape_to_wav/src/lib/writers/binary_writer.dart';
+import '../definitions.dart';
+import 'binary_writer.dart';
 
 class TapirWriter extends BinaryWriter {
   final double _scale = 4;

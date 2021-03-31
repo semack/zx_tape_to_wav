@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
-import 'package:zx_tape_to_wav/src/lib/extensions.dart';
 
 abstract class BlockBase {
   int _index = -1;

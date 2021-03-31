@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 
 import 'lib/blocks.dart';
-import 'lib/wav_builder.dart';
+import 'package:zx_tape_to_wav/src/lib/wav_builder.dart';
 
 enum TapeType { unknown, tap, tzx }
 

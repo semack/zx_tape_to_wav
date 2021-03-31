@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:zx_tape_to_wav/src/lib/wav_builder.dart';
 import 'package:zx_tape_to_wav/zx_tape_to_wav.dart';
 
 void main() async {
@@ -8,7 +9,7 @@ void main() async {
     await new File('example/assets/roms/test.tzx').readAsBytes().then((input) =>
         ZxTape.create(input)
             .then((tape) => tape.toWavBytes(
-                boosted: true,
+                audioFilterType: AudioFilterType.none,
                 frequency: 44100,
                 progress: (percents) {
                   print('progress => $percents');
@@ -21,6 +22,7 @@ void main() async {
         ZxTape.create(input)
             .then((tape) => tape.toWavBytes(
                 frequency: 44100,
+                audioFilterType: AudioFilterType.heuristic,
                 progress: (percents) {
                   print('progress => $percents');
                 }))

@@ -4,9 +4,12 @@ import 'dart:typed_data';
 import 'package:zx_tape_to_wav/src/lib/definitions.dart';
 import 'package:zx_tape_to_wav/src/lib/writers/bass_boost_writer.dart';
 import 'package:zx_tape_to_wav/src/lib/writers/binary_writer.dart';
+import 'package:zx_tape_to_wav/src/lib/writers/tapir_writer.dart';
 
 import 'blocks.dart';
 import 'extensions.dart';
+
+enum AudioFilterType { none, heuristic, bassBoost, tapir }
 
 class WavBuilder {
   double _cpuTimeStamp = 0;
@@ -24,16 +27,29 @@ class WavBuilder {
   late BinaryWriter _writer;
 
   WavBuilder(this.blocks, this.frequency, this.progress,
-      {bool boosted = true}) {
+      {audioFilterType = AudioFilterType.heuristic}) {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
-    if (boosted)
-      _writer = BassBoostWriter(frequency);
-    else
-      _writer = BinaryWriter();
+    _writer = DetermineWriter(audioFilterType);
+    print('using filter $_writer');
     var timeBase = _getLCM(frequency, _cpuFreq);
     _cpuTimeBase = timeBase / _cpuFreq;
     _sndTimeBase = timeBase / frequency;
+  }
+
+  BinaryWriter DetermineWriter(AudioFilterType filterType) {
+    switch (filterType) {
+      case AudioFilterType.none:
+        return BinaryWriter();
+      case AudioFilterType.bassBoost:
+        return BassBoostWriter(frequency);
+      case AudioFilterType.tapir:
+        return TapirWriter(frequency);
+      case AudioFilterType.heuristic:
+        if (blocks.any((element) => element is GeneralizedDataBlock))
+          return DetermineWriter(AudioFilterType.tapir);
+        return DetermineWriter(AudioFilterType.bassBoost);
+    }
   }
 
   Uint8List toBytes() {

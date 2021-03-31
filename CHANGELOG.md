@@ -1,5 +1,8 @@
+# 3.1.0+9
+Added support of Generalized Data block.
+
 # 3.0.2+8
-Replaced bassoost filter to tapir imlementation.
+Added Tapir audio filter implementation.
 
 # 3.0.1+5
 Fixed #pause block block

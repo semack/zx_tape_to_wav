@@ -1,5 +1,7 @@
 // -----------------------------------------------------------------------------
-//   This code based on the original code from Tapir 1.0 written by Mikie.
+//            This code based on the original code from
+//   Tapir 1.0 (https://www.alessandrogrussu.it/tapir/index.html)
+//                        written by Mikie.
 // -----------------------------------------------------------------------------
 
 import 'dart:math';
@@ -8,31 +10,32 @@ import '../definitions.dart';
 import 'binary_writer.dart';
 
 class TapirWriter extends BinaryWriter {
-  final double _scale = 4;
-  final double _r1 = 30000;
-  final double _r2 = 1680;
-  final double _r4_1 = 400;
-  final double _r4_0 = 1400;
-  final double _r5 = 8000;
+  static const double _scale = 4;
+  static const double _r1 = 30000;
+  static const double _r2 = 1680;
+  static const double _r4_1 = 400;
+  static const double _r4_0 = 1400;
+  static const double _r5 = 8000;
 
-  // final double _c1 = 100E-9;
-  final double _c2 = 100E-9;
-  final double _c3 = 10E-9;
+  static const double _c2 = 100E-9;
+  static const double _c3 = 10E-9;
 
-  final double _ucc = 5;
+  static const double _ucc = 5;
 
-  double _bpe_1 = 0;
-  double _bpe_0 = 0;
+  static const _bpe_1 =
+      1 / (_r2 * _c2) + (1 / _r1 + 1 / _r2 + 1 / _r4_1 + 1 / _r5) / _c3;
+  static const _bpe_0 =
+      1 / (_r2 * _c2) + (1 / _r1 + 1 / _r2 + 1 / _r4_0 + 1 / _r5) / _c3;
 
 //400 ohm
-  final double _l1_1 = -329.09278654170789459;
-  final double _l2_1 = -4847.7751093943390815;
-  final double _l3_1 = -326465.98924692109588;
+  static const double _l1_1 = -329.09278654170789459;
+  static const double _l2_1 = -4847.7751093943390815;
+  static const double _l3_1 = -326465.98924692109588;
 
 //1400 ohm
-  final double _l1_0 = -320.03611409086466826;
-  final double _l2_0 = -3485.9490113606652408;
-  final double _l3_0 = -149265.44344597704151;
+  static const double _l1_0 = -320.03611409086466826;
+  static const double _l2_0 = -3485.9490113606652408;
+  static const double _l3_0 = -149265.44344597704151;
 
   final int frequency;
 
@@ -42,8 +45,6 @@ class TapirWriter extends BinaryWriter {
   int _seriesLen = 1;
 
   TapirWriter(this.frequency) {
-    _bpe_0 = 1 / (_r2 * _c2) + (1 / _r1 + 1 / _r2 + 1 / _r4_0 + 1 / _r5) / _c3;
-    _bpe_1 = 1 / (_r2 * _c2) + (1 / _r1 + 1 / _r2 + 1 / _r4_1 + 1 / _r5) / _c3;
     _a = -(_ucc * _r4_1 / (_r4_1 + _r5)) *
         ((1 / (_r2 * _c2 * _r2 * _c2) +
                     (1 / (_r2 * _c3) + _l2_1 + _l3_1) / (_r2 * _c2) +

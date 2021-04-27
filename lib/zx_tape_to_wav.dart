@@ -2,5 +2,5 @@
 
 library zx_tape_to_wav;
 
-export 'src/zx_tape.dart';
 export 'src/lib/enums.dart';
+export 'src/zx_tape.dart';

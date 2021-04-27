@@ -1,14 +1,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'blocks.dart';
 import 'definitions.dart';
 import 'enums.dart';
+import 'extensions.dart';
 import 'writers/bass_boost_writer.dart';
 import 'writers/binary_writer.dart';
 import 'writers/tapir_writer.dart';
-
-import 'blocks.dart';
-import 'extensions.dart';
 
 class WavBuilder {
   double _cpuTimeStamp = 0;
@@ -22,21 +21,21 @@ class WavBuilder {
   final int bits = 8;
   final int channels = 1;
   final int audioFormat = 1; //pcm
-  final Function(double percents)? progress;
+  final Function(int percents)? progress;
   late BinaryWriter _writer;
 
   WavBuilder(this.blocks, this.frequency, this.progress,
       {audioFilterType = AudioFilterType.heuristic}) {
     if (frequency < 11025)
       throw new ArgumentError('Invalid frequency specified $frequency');
-    _writer = DetermineWriter(audioFilterType);
+    _writer = _determineWriter(audioFilterType);
     print('using filter $_writer');
     var timeBase = _getLCM(frequency, _cpuFreq);
     _cpuTimeBase = timeBase / _cpuFreq;
     _sndTimeBase = timeBase / frequency;
   }
 
-  BinaryWriter DetermineWriter(AudioFilterType filterType) {
+  BinaryWriter _determineWriter(AudioFilterType filterType) {
     switch (filterType) {
       case AudioFilterType.none:
         return BinaryWriter();
@@ -46,8 +45,8 @@ class WavBuilder {
         return TapirWriter(frequency);
       case AudioFilterType.heuristic:
         if (blocks.any((element) => element is GeneralizedDataBlock))
-          return DetermineWriter(AudioFilterType.tapir);
-        return DetermineWriter(AudioFilterType.bassBoost);
+          return _determineWriter(AudioFilterType.tapir);
+        return _determineWriter(AudioFilterType.bassBoost);
     }
   }
 
@@ -67,8 +66,8 @@ class WavBuilder {
       else {
         _addBlockSoundData(block);
         if (progress != null) {
-          var percents = 100.0;
-          if (i < blocks.length - 1) percents = (100 / blocks.length) * i;
+          var percents = 100;
+          if (i < blocks.length - 1) percents = ((100 / blocks.length) * i).round();
           progress!(percents);
         }
       }

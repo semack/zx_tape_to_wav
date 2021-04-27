@@ -2,9 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:zx_tape_to_wav/src/lib/enums.dart';
+import 'package:zx_tape_to_wav/src/lib/wav_builder.dart';
 
 import 'lib/blocks.dart';
-import 'package:zx_tape_to_wav/src/lib/wav_builder.dart';
 
 class ZxTape {
   ReadBuffer? _reader;
@@ -60,7 +60,7 @@ class ZxTape {
   Future<Uint8List> toWavBytes(
       {int frequency = 44100,
       audioFilterType = AudioFilterType.heuristic,
-      Function(double percents)? progress}) async {
+      Function(int percents)? progress}) async {
     if (_blocks.isEmpty) await _load();
 
     var builder = WavBuilder(_blocks, frequency, progress,

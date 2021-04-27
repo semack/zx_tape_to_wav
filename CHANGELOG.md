@@ -1,4 +1,7 @@
 # version: 3.1.0+13
+Improved Tapir filter speed.
+
+# version: 3.1.0+13
 Compile time optimizations.
 
 # 3.1.0+9

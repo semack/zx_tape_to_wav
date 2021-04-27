@@ -76,14 +76,17 @@ class TapirWriter extends BinaryWriter {
 
     if (level != _lvl) {
       if (_lvl) {
+        var exp_l1_1 = fastexp(_l1_1 * _t);
+        var exp_l2_1 = fastexp(_l2_1 * _t);
+        var exp_l3_1 = fastexp(_l3_1 * _t);
         _u2 = _ucc * _r4_1 / (_r4_1 + _r5) +
-            _a * exp(_l1_1 * _t) +
-            _b * exp(_l2_1 * _t) +
-            _c * exp(_l3_1 * _t);
+            _a * exp_l1_1 +
+            _b * exp_l2_1 +
+            _c * exp_l3_1;
         _u3 = _ucc * _r4_1 / (_r4_1 + _r5) +
-            _a * (1 + _l1_1 * _r2 * _c2) * exp(_l1_1 * _t) +
-            _b * (1 + _l2_1 * _r2 * _c2) * exp(_l2_1 * _t) +
-            _c * (1 + _l3_1 * _r2 * _c2) * exp(_l3_1 * _t);
+            _a * (1 + _l1_1 * _r2 * _c2) * exp_l1_1 +
+            _b * (1 + _l2_1 * _r2 * _c2) * exp_l2_1 +
+            _c * (1 + _l3_1 * _r2 * _c2) * exp_l3_1;
         _u1 = _ucc * _r4_1 / (_r4_1 + _r5) +
             _a *
                 (_l1_1 * _l1_1 * _r2 * _c2 * _r1 * _c3 +
@@ -94,7 +97,7 @@ class TapirWriter extends BinaryWriter {
                     1 +
                     _r1 / _r4_1 +
                     _r1 / _r5) *
-                exp(_l1_1 * _t) +
+                exp_l1_1 +
             _b *
                 (_l2_1 * _l2_1 * _r2 * _c2 * _r1 * _c3 +
                     _l2_1 *
@@ -104,7 +107,7 @@ class TapirWriter extends BinaryWriter {
                     1 +
                     _r1 / _r4_1 +
                     _r1 / _r5) *
-                exp(_l2_1 * _t) +
+                exp_l2_1 +
             _c *
                 (_l3_1 * _l3_1 * _r2 * _c2 * _r1 * _c3 +
                     _l3_1 *
@@ -114,16 +117,19 @@ class TapirWriter extends BinaryWriter {
                     1 +
                     _r1 / _r4_1 +
                     _r1 / _r5) *
-                exp(_l3_1 * _t);
+                exp_l3_1;
       } else {
+        var exp_l1_0 = fastexp(_l1_0 * _t);
+        var exp_l2_0 = fastexp(_l2_0 * _t);
+        var exp_l3_0 = fastexp(_l3_0 * _t);
         _u2 = _ucc * _r4_0 / (_r4_0 + _r5) +
-            _a * exp(_l1_0 * _t) +
-            _b * exp(_l2_0 * _t) +
-            _c * exp(_l3_0 * _t);
+            _a * exp_l1_0 +
+            _b * exp_l2_0 +
+            _c * exp_l3_0;
         _u3 = _ucc * _r4_0 / (_r4_0 + _r5) +
-            _a * (1 + _l1_0 * _r2 * _c2) * exp(_l1_0 * _t) +
-            _b * (1 + _l2_0 * _r2 * _c2) * exp(_l2_0 * _t) +
-            _c * (1 + _l3_0 * _r2 * _c2) * exp(_l3_0 * _t);
+            _a * (1 + _l1_0 * _r2 * _c2) * exp_l1_0 +
+            _b * (1 + _l2_0 * _r2 * _c2) * exp_l2_0 +
+            _c * (1 + _l3_0 * _r2 * _c2) * exp_l3_0;
         _u1 = _ucc * _r4_0 / (_r4_0 + _r5) +
             _a *
                 (_l1_0 * _l1_0 * _r2 * _c2 * _r1 * _c3 +
@@ -134,7 +140,7 @@ class TapirWriter extends BinaryWriter {
                     1 +
                     _r1 / _r4_0 +
                     _r1 / _r5) *
-                exp(_l1_0 * _t) +
+                exp_l1_0 +
             _b *
                 (_l2_0 * _l2_0 * _r2 * _c2 * _r1 * _c3 +
                     _l2_0 *
@@ -144,7 +150,7 @@ class TapirWriter extends BinaryWriter {
                     1 +
                     _r1 / _r4_0 +
                     _r1 / _r5) *
-                exp(_l2_0 * _t) +
+                exp_l2_0 +
             _c *
                 (_l3_0 * _l3_0 * _r2 * _c2 * _r1 * _c3 +
                     _l3_0 *
@@ -154,7 +160,7 @@ class TapirWriter extends BinaryWriter {
                     1 +
                     _r1 / _r4_0 +
                     _r1 / _r5) *
-                exp(_l3_0 * _t);
+                exp_l3_0;
       }
 
       _lvl = level;
@@ -237,7 +243,7 @@ class TapirWriter extends BinaryWriter {
                                   _c2) +
                       _r1 / _r4_1 +
                       _r1 / _r5) *
-                  exp(_l1_1 * (_t + time)) +
+                  fastexp(_l1_1 * (_t + time)) +
               _b *
                   (_l2_1 * _l2_1 * _r2 * _c2 * _r1 * _c3 +
                       _l2_1 *
@@ -246,7 +252,7 @@ class TapirWriter extends BinaryWriter {
                                   _c2) +
                       _r1 / _r4_1 +
                       _r1 / _r5) *
-                  exp(_l2_1 * (_t + time)) +
+                  fastexp(_l2_1 * (_t + time)) +
               _c *
                   (_l3_1 * _l3_1 * _r2 * _c2 * _r1 * _c3 +
                       _l3_1 *
@@ -255,7 +261,7 @@ class TapirWriter extends BinaryWriter {
                                   _c2) +
                       _r1 / _r4_1 +
                       _r1 / _r5) *
-                  exp(_l3_1 * (_t + time)));
+                  fastexp(_l3_1 * (_t + time)));
     } else {
       return -_scale *
           (_a *
@@ -266,7 +272,7 @@ class TapirWriter extends BinaryWriter {
                                   _c2) +
                       _r1 / _r4_0 +
                       _r1 / _r5) *
-                  exp(_l1_0 * (_t + time)) +
+                  fastexp(_l1_0 * (_t + time)) +
               _b *
                   (_l2_0 * _l2_0 * _r2 * _c2 * _r1 * _c3 +
                       _l2_0 *
@@ -275,7 +281,7 @@ class TapirWriter extends BinaryWriter {
                                   _c2) +
                       _r1 / _r4_0 +
                       _r1 / _r5) *
-                  exp(_l2_0 * (_t + time)) +
+                  fastexp(_l2_0 * (_t + time)) +
               _c *
                   (_l3_0 * _l3_0 * _r2 * _c2 * _r1 * _c3 +
                       _l3_0 *
@@ -284,7 +290,7 @@ class TapirWriter extends BinaryWriter {
                                   _c2) +
                       _r1 / _r4_0 +
                       _r1 / _r5) *
-                  exp(_l3_0 * (_t + time)));
+                  fastexp(_l3_0 * (_t + time)));
     }
   }
 
@@ -320,5 +326,18 @@ class TapirWriter extends BinaryWriter {
   void flush() {
     _flush();
     super.flush();
+  }
+
+  // exp function wrapper
+  double fastexp(num val) {
+    return exp(val);
+    // var tmp = (1512775 * val + 1072632447).round();
+    // var data = ByteData(8);
+    // var s = tmp << 32;
+    // data.setInt64(0, s);
+    // var result = data.getFloat64(0);
+    // if (result.isNaN)
+    //   result = exp(val);
+    // return result;
   }
 }
